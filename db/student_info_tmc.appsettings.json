@@ -1,0 +1,28 @@
+[{
+  "_id": {
+    "$oid": "6945fe7730fd746650554797"
+  },
+  "darkMode": false,
+  "fontFamily": "Nunito",
+  "fontSize": "12px",
+  "activeSchoolYear": "2025-2026",
+  "activeTerm": "Prelim",
+  "sideNavColor": "#1e293b",
+  "topNavColor": "#ffffff",
+  "sideNavFontColor": "#e2e8f0",
+  "sideNavHoverColor": "#ffffff",
+  "sideNavActiveColor": "#ffffff",
+  "topNavFontColor": "#1f2937",
+  "loginBackgroundType": "color",
+  "loginBackgroundColor": "#bfbfbf",
+  "loginBackgroundImage": "https://wallpaperaccess.com/full/2648925.jpg",
+  "loginFormBgColor": "#fcfcfc",
+  "loginFormBgOpacity": 89,
+  "createdAt": {
+    "$date": "2025-12-20T01:40:07.122Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-19T09:21:35.475Z"
+  },
+  "__v": 0
+}]

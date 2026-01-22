@@ -1,0 +1,2832 @@
+[{
+  "_id": {
+    "$oid": "69476ea4219e17406b3e3e17"
+  },
+  "scheduleId": {
+    "$oid": "69468559dc67ff5319f47858"
+  },
+  "school_year": "2025-2026",
+  "term": "prelim",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T03:51:00.564Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T06:57:31.267Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69476ea4219e17406b3e3e1a"
+  },
+  "scheduleId": {
+    "$oid": "69468559dc67ff5319f47858"
+  },
+  "school_year": "2025-2026",
+  "term": "midterm",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T03:51:00.606Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T03:51:00.606Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69476ea4219e17406b3e3e1d"
+  },
+  "scheduleId": {
+    "$oid": "69468559dc67ff5319f47858"
+  },
+  "school_year": "2025-2026",
+  "term": "semi-final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T03:51:00.623Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T03:51:00.623Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69476ea4219e17406b3e3e20"
+  },
+  "scheduleId": {
+    "$oid": "69468559dc67ff5319f47858"
+  },
+  "school_year": "2025-2026",
+  "term": "final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T03:51:00.636Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T03:51:00.636Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69476ea4219e17406b3e3e23"
+  },
+  "scheduleId": {
+    "$oid": "6946863adc67ff5319f4798c"
+  },
+  "school_year": "2025-2026",
+  "term": "prelim",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 11,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T03:51:00.649Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T04:01:52.281Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69476ea4219e17406b3e3e26"
+  },
+  "scheduleId": {
+    "$oid": "6946863adc67ff5319f4798c"
+  },
+  "school_year": "2025-2026",
+  "term": "midterm",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T03:51:00.665Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T03:51:00.665Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69476ea4219e17406b3e3e29"
+  },
+  "scheduleId": {
+    "$oid": "6946863adc67ff5319f4798c"
+  },
+  "school_year": "2025-2026",
+  "term": "semi-final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T03:51:00.676Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T03:51:00.676Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69476ea4219e17406b3e3e2c"
+  },
+  "scheduleId": {
+    "$oid": "6946863adc67ff5319f4798c"
+  },
+  "school_year": "2025-2026",
+  "term": "final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T03:51:00.691Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T03:51:00.691Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69476ea4219e17406b3e3e2f"
+  },
+  "scheduleId": {
+    "$oid": "69475ced102a71852e9ffabc"
+  },
+  "school_year": "2025-2026",
+  "term": "prelim",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T03:51:00.702Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T05:47:14.274Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69476ea4219e17406b3e3e32"
+  },
+  "scheduleId": {
+    "$oid": "69475ced102a71852e9ffabc"
+  },
+  "school_year": "2025-2026",
+  "term": "midterm",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T03:51:00.709Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T04:36:33.609Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69476ea4219e17406b3e3e35"
+  },
+  "scheduleId": {
+    "$oid": "69475ced102a71852e9ffabc"
+  },
+  "school_year": "2025-2026",
+  "term": "semi-final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T03:51:00.721Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T03:51:00.721Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "69476ea4219e17406b3e3e38"
+  },
+  "scheduleId": {
+    "$oid": "69475ced102a71852e9ffabc"
+  },
+  "school_year": "2025-2026",
+  "term": "final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T03:51:00.727Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T03:51:00.727Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "694796a19265b3b13705044d"
+  },
+  "scheduleId": {
+    "$oid": "694790f19438916fc69ed37e"
+  },
+  "school_year": "2025-2026",
+  "term": "prelim",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T06:41:37.835Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T06:41:37.835Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "694796a19265b3b137050450"
+  },
+  "scheduleId": {
+    "$oid": "694790f19438916fc69ed37e"
+  },
+  "school_year": "2025-2026",
+  "term": "midterm",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T06:41:37.869Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T06:41:37.869Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "694796a19265b3b137050453"
+  },
+  "scheduleId": {
+    "$oid": "694790f19438916fc69ed37e"
+  },
+  "school_year": "2025-2026",
+  "term": "semi-final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T06:41:37.880Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T06:41:37.880Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "694796a19265b3b137050456"
+  },
+  "scheduleId": {
+    "$oid": "694790f19438916fc69ed37e"
+  },
+  "school_year": "2025-2026",
+  "term": "final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2025-12-21T06:41:37.895Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-21T06:41:37.895Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acae"
+  },
+  "scheduleId": {
+    "$oid": "6960db0b2a5d10c719660b74"
+  },
+  "school_year": "2025-2026",
+  "term": "prelim",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.055Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.055Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acba"
+  },
+  "scheduleId": {
+    "$oid": "6960db0b2a5d10c719660b74"
+  },
+  "school_year": "2025-2026",
+  "term": "midterm",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.087Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.087Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acbd"
+  },
+  "scheduleId": {
+    "$oid": "6960db0b2a5d10c719660b74"
+  },
+  "school_year": "2025-2026",
+  "term": "semi-final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.102Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.102Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acc0"
+  },
+  "scheduleId": {
+    "$oid": "6960db0b2a5d10c719660b74"
+  },
+  "school_year": "2025-2026",
+  "term": "final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.117Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.117Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acc3"
+  },
+  "scheduleId": {
+    "$oid": "6960dd542a5d10c719660d3d"
+  },
+  "school_year": "2025-2026",
+  "term": "prelim",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.136Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.136Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acc6"
+  },
+  "scheduleId": {
+    "$oid": "6960dd542a5d10c719660d3d"
+  },
+  "school_year": "2025-2026",
+  "term": "midterm",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.166Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.166Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acc9"
+  },
+  "scheduleId": {
+    "$oid": "6960dd542a5d10c719660d3d"
+  },
+  "school_year": "2025-2026",
+  "term": "semi-final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.191Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.191Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9accc"
+  },
+  "scheduleId": {
+    "$oid": "6960dd542a5d10c719660d3d"
+  },
+  "school_year": "2025-2026",
+  "term": "final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.208Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.208Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9accf"
+  },
+  "scheduleId": {
+    "$oid": "6960dd632a5d10c719660e2c"
+  },
+  "school_year": "2025-2026",
+  "term": "prelim",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.220Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.220Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acd2"
+  },
+  "scheduleId": {
+    "$oid": "6960dd632a5d10c719660e2c"
+  },
+  "school_year": "2025-2026",
+  "term": "midterm",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.232Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.232Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acd5"
+  },
+  "scheduleId": {
+    "$oid": "6960dd632a5d10c719660e2c"
+  },
+  "school_year": "2025-2026",
+  "term": "semi-final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.242Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.242Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acd8"
+  },
+  "scheduleId": {
+    "$oid": "6960dd632a5d10c719660e2c"
+  },
+  "school_year": "2025-2026",
+  "term": "final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.256Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.256Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acdb"
+  },
+  "scheduleId": {
+    "$oid": "6960dd832a5d10c719660eeb"
+  },
+  "school_year": "2025-2026",
+  "term": "prelim",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.267Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.267Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acde"
+  },
+  "scheduleId": {
+    "$oid": "6960dd832a5d10c719660eeb"
+  },
+  "school_year": "2025-2026",
+  "term": "midterm",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.276Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.276Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9ace1"
+  },
+  "scheduleId": {
+    "$oid": "6960dd832a5d10c719660eeb"
+  },
+  "school_year": "2025-2026",
+  "term": "semi-final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.286Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.286Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9ace4"
+  },
+  "scheduleId": {
+    "$oid": "6960dd832a5d10c719660eeb"
+  },
+  "school_year": "2025-2026",
+  "term": "final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.296Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.296Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9ace7"
+  },
+  "scheduleId": {
+    "$oid": "6960dd942a5d10c719660fb0"
+  },
+  "school_year": "2025-2026",
+  "term": "prelim",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 6,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.306Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-19T09:24:50.974Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acea"
+  },
+  "scheduleId": {
+    "$oid": "6960dd942a5d10c719660fb0"
+  },
+  "school_year": "2025-2026",
+  "term": "midterm",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.316Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.316Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9aced"
+  },
+  "scheduleId": {
+    "$oid": "6960dd942a5d10c719660fb0"
+  },
+  "school_year": "2025-2026",
+  "term": "semi-final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.325Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.325Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acf0"
+  },
+  "scheduleId": {
+    "$oid": "6960dd942a5d10c719660fb0"
+  },
+  "school_year": "2025-2026",
+  "term": "final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.333Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.333Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acf3"
+  },
+  "scheduleId": {
+    "$oid": "6960dda12a5d10c71966106f"
+  },
+  "school_year": "2025-2026",
+  "term": "prelim",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.341Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.341Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acf6"
+  },
+  "scheduleId": {
+    "$oid": "6960dda12a5d10c71966106f"
+  },
+  "school_year": "2025-2026",
+  "term": "midterm",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.349Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.349Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acf9"
+  },
+  "scheduleId": {
+    "$oid": "6960dda12a5d10c71966106f"
+  },
+  "school_year": "2025-2026",
+  "term": "semi-final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.357Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.357Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acfc"
+  },
+  "scheduleId": {
+    "$oid": "6960dda12a5d10c71966106f"
+  },
+  "school_year": "2025-2026",
+  "term": "final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.365Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.365Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9acff"
+  },
+  "scheduleId": {
+    "$oid": "6960ddd72a5d10c71966116c"
+  },
+  "school_year": "2025-2026",
+  "term": "prelim",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.373Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.373Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9ad02"
+  },
+  "scheduleId": {
+    "$oid": "6960ddd72a5d10c71966116c"
+  },
+  "school_year": "2025-2026",
+  "term": "midterm",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.381Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.381Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9ad05"
+  },
+  "scheduleId": {
+    "$oid": "6960ddd72a5d10c71966116c"
+  },
+  "school_year": "2025-2026",
+  "term": "semi-final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.389Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.389Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9ad08"
+  },
+  "scheduleId": {
+    "$oid": "6960ddd72a5d10c71966116c"
+  },
+  "school_year": "2025-2026",
+  "term": "final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.396Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.396Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9ad0b"
+  },
+  "scheduleId": {
+    "$oid": "6960dde32a5d10c719661265"
+  },
+  "school_year": "2025-2026",
+  "term": "prelim",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.405Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.405Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9ad0e"
+  },
+  "scheduleId": {
+    "$oid": "6960dde32a5d10c719661265"
+  },
+  "school_year": "2025-2026",
+  "term": "midterm",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.413Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.413Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9ad11"
+  },
+  "scheduleId": {
+    "$oid": "6960dde32a5d10c719661265"
+  },
+  "school_year": "2025-2026",
+  "term": "semi-final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.422Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.422Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6960dfe0ec0a87a041f9ad14"
+  },
+  "scheduleId": {
+    "$oid": "6960dde32a5d10c719661265"
+  },
+  "school_year": "2025-2026",
+  "term": "final",
+  "highest_scores": {
+    "quizzes": {
+      "quiz_1": 10,
+      "quiz_2": 10,
+      "quiz_3": 10,
+      "quiz_4": 10,
+      "quiz_5": 10,
+      "quiz_6": 10,
+      "quiz_7": 10,
+      "quiz_8": 10,
+      "quiz_9": 10,
+      "quiz_10": 10
+    },
+    "activities": {
+      "activity_1": 20,
+      "activity_2": 20,
+      "activity_3": 20,
+      "activity_4": 20,
+      "activity_5": 20,
+      "activity_6": 20,
+      "activity_7": 20,
+      "activity_8": 20,
+      "activity_9": 20,
+      "activity_10": 20
+    },
+    "oral": {
+      "oral_1": 20,
+      "oral_2": 20,
+      "oral_3": 20,
+      "oral_4": 20,
+      "oral_5": 20
+    },
+    "projects": {
+      "project_1": 20,
+      "project_2": 20,
+      "project_3": 20,
+      "project_4": 20,
+      "project_5": 20
+    },
+    "attendance": 10,
+    "exam_score": 50
+  },
+  "createdAt": {
+    "$date": "2026-01-09T11:00:48.430Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-09T11:00:48.430Z"
+  },
+  "__v": 0
+}]

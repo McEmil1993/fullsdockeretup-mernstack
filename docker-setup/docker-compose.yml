@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # Backend Service
+  backend:
+    build:
+      context: ..
+      dockerfile: docker-setup/backend/Dockerfile
+    container_name: student-info-backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../backend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker-setup/frontend/Dockerfile
+    container_name: student-info-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../forntend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - app-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge

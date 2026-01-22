@@ -1,0 +1,44 @@
+[{
+  "_id": {
+    "$oid": "6945f4cbf13c2d0652580b06"
+  },
+  "name": "Mark Emil",
+  "email": "admin@admin.com",
+  "password": "$2a$10$yjVHFnaqsm9IQYSDJqWZku60MMEzNqrQBmiKxrET1oEGX1EZWnBby",
+  "role": "admin",
+  "status": "active",
+  "createdAt": {
+    "$date": "2025-12-20T00:58:51.357Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-19T09:20:46.383Z"
+  },
+  "__v": 0,
+  "refreshTokenExpiresAt": {
+    "$date": "2026-01-26T09:20:46.378Z"
+  },
+  "refreshTokenHash": "85ffa484ba24e1188f061b60351fca86b80f811ac77dce3c01f91e156f090158",
+  "tokenVersion": 23
+},
+{
+  "_id": {
+    "$oid": "69464d433bbe7cdd811b7b92"
+  },
+  "name": "Administrator",
+  "email": "admin@example.com",
+  "password": "$2a$10$LUm2BvlSfzeKIS/.vFijUeG6BEl2BCb/37YVO51nkY0Q223tPrd5e",
+  "role": "admin",
+  "status": "active",
+  "tokenVersion": 0,
+  "createdAt": {
+    "$date": "2025-12-20T07:16:19.587Z"
+  },
+  "updatedAt": {
+    "$date": "2026-01-18T04:50:41.682Z"
+  },
+  "__v": 0,
+  "refreshTokenExpiresAt": {
+    "$date": "2026-01-25T04:50:13.251Z"
+  },
+  "refreshTokenHash": "f9b96c0f64de69a7794612b5d79f3e19d0b5b7675b86d4db068ceaf931d6e51f"
+}]
