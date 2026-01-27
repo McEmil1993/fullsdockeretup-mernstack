@@ -14,7 +14,7 @@ const createDefaultAdmin = async () => {
       const admin = new User({
         name: 'Administrator',
         email: adminEmail,
-        password: 'admin123',
+        password: 'admin123!!',
         role: 'admin',
         status: 'active',
       });

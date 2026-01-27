@@ -1,0 +1,14 @@
+show collections
+db.students.deleteMany({})
+db.schedules.deleteMany({})
+db.schedules.find()
+{ acknowledged: true, deletedCount: <number> }
+db.schedules.deleteMany({})
+schedules
+show collections
+student_info_tmc
+db
+use student_info_tmc
+show dbs
+exit
+show dbs

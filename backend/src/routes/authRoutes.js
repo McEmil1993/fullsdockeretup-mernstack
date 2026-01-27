@@ -5,6 +5,11 @@ const { body } = require('express-validator');
 const { validateRequest } = require('../middleware/validation');
 const { authenticate } = require('../middleware/auth');
 
+// Health check endpoint for Docker
+router.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 router.post(
   '/login',
   [

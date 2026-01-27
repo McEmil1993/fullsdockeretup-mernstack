@@ -8,6 +8,7 @@ const scheduleRoutes = require('./src/routes/scheduleRoutes');
 const studentRoutes = require('./src/routes/studentRoutes');
 const assessmentRoutes = require('./src/routes/assessmentRoutes');
 const attendanceRoutes = require('./src/routes/attendanceRoutes');
+const fileUploadRoutes = require('./src/routes/fileUploadRoutes');
 const errorHandler = require('./src/middleware/errorHandler');
 
 const app = express();
@@ -33,8 +34,8 @@ app.use(
   })
 );
 app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 app.get('/health', (req, res) => {
   res.json({
@@ -57,6 +58,11 @@ app.use('/api/students', studentRoutes);
 app.use('/api/assessments', assessmentRoutes);
 
 app.use('/api/attendance', attendanceRoutes);
+
+app.use('/api/file-uploads', fileUploadRoutes);
+
+// Serve static files from public/uploads
+app.use('/api/uploads', express.static('public/uploads'));
 
 app.use((req, res) => {
   res.status(404).json({
