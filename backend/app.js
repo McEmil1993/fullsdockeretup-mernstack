@@ -34,8 +34,8 @@ app.use(
   })
 );
 app.use(cookieParser());
-app.use(express.json({ limit: '100mb' }));
-app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+app.use(express.json({ limit: '10gb' }));
+app.use(express.urlencoded({ extended: true, limit: '10gb' }));
 
 app.get('/health', (req, res) => {
   res.json({

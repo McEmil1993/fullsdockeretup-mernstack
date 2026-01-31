@@ -5,7 +5,7 @@ const FileUploadCard = ({
   onFileSelect, 
   onRemove, 
   accept = '*', 
-  maxSize = 100, // MB
+  maxSize = 10240, // MB (10GB default)
   multiple = false,
   files = [],
   disabled = false 
@@ -55,7 +55,9 @@ const FileUploadCard = ({
     })
 
     if (validFiles.length !== selectedFiles.length) {
-      alert(`Some files exceed the ${maxSize}MB size limit and were not added.`)
+      const maxSizeText = maxSize >= 1024 ? `${maxSize / 1024}GB` : `${maxSize}MB`
+      // Use a toast/notification instead of alert - will be handled by parent component
+      console.warn(`Some files exceed the ${maxSizeText} size limit and were not added.`)
     }
 
     if (onFileSelect) {
@@ -66,9 +68,16 @@ const FileUploadCard = ({
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes'
     const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+  }
+
+  const formatMaxSize = (sizeMB) => {
+    if (sizeMB >= 1024) {
+      return `${sizeMB / 1024}GB`
+    }
+    return `${sizeMB}MB`
   }
 
   const getFileIcon = (fileName) => {
@@ -125,7 +134,7 @@ const FileUploadCard = ({
         </h3>
         
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          {multiple ? 'Multiple files allowed' : 'Single file only'} • Max size: {maxSize}MB
+          {multiple ? 'Multiple files allowed' : 'Single file only'} • Max size: {formatMaxSize(maxSize)}
         </p>
         
         {accept !== '*' && (

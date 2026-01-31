@@ -8,7 +8,21 @@ const uploadSessions = new Map();
 
 class FileUploadService {
   // Helper function to determine file category based on mime type
-  getCategoryFromMimeType(mimeType) {
+  getCategoryFromMimeType(mimeType, fileName = '') {
+    // Handle null or undefined mimeType
+    if (!mimeType) {
+      // Fallback to extension-based detection if mimeType is missing
+      const ext = path.extname(fileName).toLowerCase();
+      if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'].includes(ext)) return 'Images';
+      if (['.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv', '.webm'].includes(ext)) return 'Videos';
+      if (['.mp3', '.wav', '.ogg', '.m4a', '.flac', '.aac'].includes(ext)) return 'Audio';
+      if (['.pdf', '.doc', '.docx', '.txt', '.rtf'].includes(ext)) return 'Documents';
+      if (['.xls', '.xlsx', '.csv'].includes(ext)) return 'Reports';
+      if (['.zip', '.rar', '.7z', '.tar', '.gz'].includes(ext)) return 'Archives';
+      return 'Other';
+    }
+
+    // MIME type-based detection
     if (mimeType.startsWith('image/')) return 'Images';
     if (mimeType.startsWith('video/')) return 'Videos';
     if (mimeType.startsWith('audio/')) return 'Audio';
@@ -21,7 +35,9 @@ class FileUploadService {
         mimeType === 'text/csv') return 'Reports';
     if (mimeType === 'application/zip' || 
         mimeType === 'application/x-rar-compressed' ||
-        mimeType === 'application/x-7z-compressed') return 'Archives';
+        mimeType === 'application/x-7z-compressed' ||
+        mimeType === 'application/x-tar' ||
+        mimeType === 'application/gzip') return 'Archives';
     return 'Other';
   }
 
@@ -47,7 +63,7 @@ class FileUploadService {
 
   async createFileUpload(fileData, userId, userName) {
     try {
-      const category = this.getCategoryFromMimeType(fileData.mimetype);
+      const category = this.getCategoryFromMimeType(fileData.mimetype, fileData.originalname);
       const fileType = this.getFileTypeFromMimeType(fileData.mimetype, fileData.originalname);
 
       const fileUpload = new FileUpload({
@@ -336,7 +352,8 @@ class FileUploadService {
       }
 
       // Create file upload record
-      const fileCategory = category || this.getCategoryFromMimeType(session.mimeType);
+      // Always auto-detect category if not explicitly provided or if null
+      const fileCategory = (category && category !== null) ? category : this.getCategoryFromMimeType(session.mimeType, session.fileName);
       const fileType = this.getFileTypeFromMimeType(session.mimeType, session.fileName);
 
       const fileUpload = new FileUpload({

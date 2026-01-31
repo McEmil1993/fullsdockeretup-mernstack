@@ -153,7 +153,7 @@ router.post(
       .notEmpty()
       .withMessage('Upload ID is required'),
     body('category')
-      .optional()
+      .optional({ nullable: true, checkFalsy: true })
       .isIn(['Documents', 'Reports', 'Images', 'Videos', 'Audio', 'Archives', 'Other'])
       .withMessage('Invalid category'),
   ],
@@ -172,6 +172,19 @@ router.post(
   ],
   validateRequest,
   fileUploadController.cancelChunkedUpload.bind(fileUploadController)
+);
+
+// Public file access routes (no authentication required)
+// Get public file info by ID
+router.get(
+  '/public/:fileId',
+  fileUploadController.getPublicFile.bind(fileUploadController)
+);
+
+// Download public file
+router.get(
+  '/public/:fileId/download',
+  fileUploadController.downloadPublicFile.bind(fileUploadController)
 );
 
 module.exports = router;

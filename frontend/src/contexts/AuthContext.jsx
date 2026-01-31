@@ -76,9 +76,17 @@ export const AuthProvider = ({ children }) => {
 
   // Check if user is logged in on mount and on route changes
   useEffect(() => {
-    // Always check auth on mount to maintain session (even on login page)
-    // This ensures user stays logged in after page refresh
-    checkAuth()
+    // Skip auth check on public routes
+    const isPublicRoute = window.location.pathname.startsWith('/file/')
+    
+    if (!isPublicRoute) {
+      // Always check auth on mount to maintain session (even on login page)
+      // This ensures user stays logged in after page refresh
+      checkAuth()
+    } else {
+      // On public routes, just set loading to false without checking auth
+      setLoading(false)
+    }
     
     // Listen for logout events (from API service when refresh fails)
     // This only fires when refresh token is truly expired/invalid

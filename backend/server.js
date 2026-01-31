@@ -9,10 +9,11 @@ connectDB();
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Max file upload size: 10GB`);
 });
 
-// Increase timeout for large file uploads (5 minutes)
-server.timeout = 300000;
-server.keepAliveTimeout = 300000;
-server.headersTimeout = 310000;
+// Increase timeout for large file uploads (30 minutes for 10GB files)
+server.timeout = 1800000; // 30 minutes
+server.keepAliveTimeout = 1800000;
+server.headersTimeout = 1810000;
 

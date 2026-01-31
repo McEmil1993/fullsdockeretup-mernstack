@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import FileUploadCard from '../components/FileUploadCard'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
 import Toast from '../components/Toast'
+import ConfirmDialog from '../components/ConfirmDialog'
 import Table from '../components/Table'
 import Pagination from '../components/Pagination'
 import FilePreview from '../components/FilePreview'
-import { Upload, Trash2, Download, Eye, Search, Filter } from 'lucide-react'
+import { Upload, Trash2, Download, Eye, Search, Filter, CheckSquare, Square, Link2, Check } from 'lucide-react'
 import fileUploadService from '../services/fileUploads'
 
 const FileUpload = () => {
@@ -27,6 +28,21 @@ const FileUpload = () => {
   const [uploadStartTime, setUploadStartTime] = useState(null)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [uploadSpeed, setUploadSpeed] = useState(0)
+
+  // Selection state
+  const [selectedFileIds, setSelectedFileIds] = useState([])
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const longPressTimerRef = useRef(null)
+  const [longPressTarget, setLongPressTarget] = useState(null)
+
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    type: 'warning'
+  })
 
   // Toast state
   const [toast, setToast] = useState({
@@ -222,21 +238,106 @@ const FileUpload = () => {
     }
   }
 
-  const handleDeleteFile = async (file) => {
-    if (!window.confirm(`Are you sure you want to delete ${file.originalName}?`)) {
-      return
-    }
+  // Selection handlers
+  const toggleFileSelection = (fileId) => {
+    setSelectedFileIds(prev => 
+      prev.includes(fileId) 
+        ? prev.filter(id => id !== fileId)
+        : [...prev, fileId]
+    )
+  }
 
-    try {
-      const response = await fileUploadService.deleteFile(file._id)
-      
-      if (response.success) {
-        showToast(`${file.originalName} deleted successfully`, 'success')
-        fetchFiles()
-      }
-    } catch (error) {
-      showToast(error.message || 'Failed to delete file', 'error')
+  const toggleSelectAll = () => {
+    if (selectedFileIds.length === uploadedFiles.length) {
+      setSelectedFileIds([])
+    } else {
+      setSelectedFileIds(uploadedFiles.map(f => f._id))
     }
+  }
+
+  const handleLongPressStart = (e, fileId) => {
+    e.preventDefault()
+    setLongPressTarget(fileId)
+    longPressTimerRef.current = setTimeout(() => {
+      setIsSelectionMode(true)
+      toggleFileSelection(fileId)
+      showToast('Selection mode activated', 'info')
+    }, 500) // 500ms long press
+  }
+
+  const handleLongPressEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current)
+      longPressTimerRef.current = null
+    }
+    setLongPressTarget(null)
+  }
+
+  const exitSelectionMode = () => {
+    setIsSelectionMode(false)
+    setSelectedFileIds([])
+  }
+
+  const handleDeleteFile = async (file) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete File',
+      message: `Are you sure you want to delete "${file.originalName}"? This action cannot be undone.`,
+      type: 'danger',
+      onConfirm: async () => {
+        try {
+          const response = await fileUploadService.deleteFile(file._id)
+          
+          if (response.success) {
+            showToast(`${file.originalName} deleted successfully`, 'success')
+            fetchFiles()
+          }
+        } catch (error) {
+          showToast(error.message || 'Failed to delete file', 'error')
+        } finally {
+          setConfirmDialog({ ...confirmDialog, isOpen: false })
+        }
+      }
+    })
+  }
+
+  const handleBulkDelete = async () => {
+    const count = selectedFileIds.length
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Multiple Files',
+      message: `Are you sure you want to delete ${count} file${count > 1 ? 's' : ''}? This action cannot be undone.`,
+      type: 'danger',
+      onConfirm: async () => {
+        try {
+          let successCount = 0
+          let failCount = 0
+
+          for (const fileId of selectedFileIds) {
+            try {
+              const response = await fileUploadService.deleteFile(fileId)
+              if (response.success) successCount++
+            } catch (error) {
+              failCount++
+            }
+          }
+
+          if (successCount > 0) {
+            showToast(`${successCount} file${successCount > 1 ? 's' : ''} deleted successfully`, 'success')
+          }
+          if (failCount > 0) {
+            showToast(`Failed to delete ${failCount} file${failCount > 1 ? 's' : ''}`, 'error')
+          }
+
+          exitSelectionMode()
+          fetchFiles()
+        } catch (error) {
+          showToast(error.message || 'Failed to delete files', 'error')
+        } finally {
+          setConfirmDialog({ ...confirmDialog, isOpen: false })
+        }
+      }
+    })
   }
 
   const handleViewFile = (file) => {
@@ -251,6 +352,30 @@ const FileUpload = () => {
       showToast(`${file.originalName} downloaded successfully`, 'success')
     } catch (error) {
       showToast(error.message || 'Failed to download file', 'error')
+    }
+  }
+
+  const handleCopyLink = async (file) => {
+    try {
+      const publicUrl = `${window.location.origin}/file/${file._id}`
+      
+      await navigator.clipboard.writeText(publicUrl)
+      showToast('Link copied to clipboard!', 'success')
+    } catch (error) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = `${window.location.origin}/file/${file._id}`
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.select()
+      try {
+        document.execCommand('copy')
+        showToast('Link copied to clipboard!', 'success')
+      } catch (err) {
+        showToast('Failed to copy link', 'error')
+      }
+      document.body.removeChild(textArea)
     }
   }
 
@@ -371,17 +496,43 @@ const FileUpload = () => {
             File Upload
           </h1>
           <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
-            Manage and upload your files
+            {isSelectionMode 
+              ? `${selectedFileIds.length} file${selectedFileIds.length !== 1 ? 's' : ''} selected`
+              : 'Manage and upload your files'
+            }
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => setIsUploadModalOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <Upload className="w-5 h-5" />
-          Upload Files
-        </Button>
+        <div className="flex items-center gap-3">
+          {isSelectionMode ? (
+            <>
+              <Button
+                variant="secondary"
+                onClick={exitSelectionMode}
+                className="flex items-center gap-2"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleBulkDelete}
+                disabled={selectedFileIds.length === 0}
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="w-5 h-5" />
+                Delete ({selectedFileIds.length})
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="primary"
+              onClick={() => setIsUploadModalOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Upload className="w-5 h-5" />
+              Upload Files
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Statistics Cards */}
@@ -463,6 +614,21 @@ const FileUpload = () => {
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
+                {isSelectionMode && (
+                  <th className="px-3 md:px-6 py-3 text-left">
+                    <button
+                      onClick={toggleSelectAll}
+                      className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                      title={selectedFileIds.length === uploadedFiles.length ? 'Deselect All' : 'Select All'}
+                    >
+                      {selectedFileIds.length === uploadedFiles.length ? (
+                        <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      ) : (
+                        <Square className="w-5 h-5 text-gray-400" />
+                      )}
+                    </button>
+                  </th>
+                )}
                 {columns.map((col) => (
                   <th
                     key={col.key}
@@ -471,9 +637,11 @@ const FileUpload = () => {
                     {col.label}
                   </th>
                 ))}
-                <th className="px-3 md:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Actions
-                </th>
+                {!isSelectionMode && (
+                  <th className="px-3 md:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -488,7 +656,50 @@ const FileUpload = () => {
                 </tr>
               ) : uploadedFiles.length > 0 ? (
                 uploadedFiles.map((file) => (
-                  <tr key={file._id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <tr 
+                    key={file._id} 
+                    className={`transition-colors ${
+                      selectedFileIds.includes(file._id) 
+                        ? 'bg-blue-50 dark:bg-blue-900/20' 
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                    } ${isSelectionMode ? 'cursor-pointer' : ''}`}
+                    onClick={(e) => {
+                      if (isSelectionMode && !e.target.closest('button')) {
+                        toggleFileSelection(file._id)
+                      }
+                    }}
+                    onMouseDown={(e) => {
+                      if (!isSelectionMode && e.button === 0) {
+                        handleLongPressStart(e, file._id)
+                      }
+                    }}
+                    onMouseUp={handleLongPressEnd}
+                    onMouseLeave={handleLongPressEnd}
+                    onTouchStart={(e) => {
+                      if (!isSelectionMode) {
+                        handleLongPressStart(e, file._id)
+                      }
+                    }}
+                    onTouchEnd={handleLongPressEnd}
+                    onTouchCancel={handleLongPressEnd}
+                  >
+                    {isSelectionMode && (
+                      <td className="px-3 md:px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleFileSelection(file._id)
+                          }}
+                          className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                        >
+                          {selectedFileIds.includes(file._id) ? (
+                            <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                          ) : (
+                            <Square className="w-5 h-5 text-gray-400" />
+                          )}
+                        </button>
+                      </td>
+                    )}
                     {columns.map((col) => (
                       <td
                         key={col.key}
@@ -497,31 +708,40 @@ const FileUpload = () => {
                         {col.render ? col.render(file[col.key], file) : file[col.key]}
                       </td>
                     ))}
-                    <td className="px-3 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleViewFile(file)}
-                          className="p-1.5 rounded hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
-                          title="View"
-                        >
-                          <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                        </button>
-                        <button
-                          onClick={() => handleDownloadFile(file)}
-                          className="p-1.5 rounded hover:bg-green-100 dark:hover:bg-green-900 transition-colors"
-                          title="Download"
-                        >
-                          <Download className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteFile(file)}
-                          className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
-                        </button>
-                      </div>
-                    </td>
+                    {!isSelectionMode && (
+                      <td className="px-3 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end gap-1 md:gap-2">
+                          <button
+                            onClick={() => handleViewFile(file)}
+                            className="p-1.5 rounded hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                            title="View"
+                          >
+                            <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          </button>
+                          <button
+                            onClick={() => handleCopyLink(file)}
+                            className="p-1.5 rounded hover:bg-purple-100 dark:hover:bg-purple-900 transition-colors"
+                            title="Copy Link"
+                          >
+                            <Link2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          </button>
+                          <button
+                            onClick={() => handleDownloadFile(file)}
+                            className="p-1.5 rounded hover:bg-green-100 dark:hover:bg-green-900 transition-colors"
+                            title="Download"
+                          >
+                            <Download className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteFile(file)}
+                            className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               ) : (
@@ -564,7 +784,7 @@ const FileUpload = () => {
             onRemove={handleRemoveFile}
             files={selectedFiles}
             multiple={true}
-            maxSize={100}
+            maxSize={10240}
             accept="*"
           />
 
@@ -703,6 +923,18 @@ const FileUpload = () => {
           </div>
         )}
       </Modal>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
 
       {/* Toast */}
       <Toast

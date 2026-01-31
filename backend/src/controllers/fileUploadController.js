@@ -372,6 +372,83 @@ class FileUploadController {
       });
     }
   }
+
+  // Public file access methods (no authentication required)
+  async getPublicFile(req, res) {
+    try {
+      const { fileId } = req.params;
+
+      if (!fileId) {
+        return res.status(400).json({
+          success: false,
+          message: 'File ID is required',
+        });
+      }
+
+      const file = await fileUploadService.getFileById(fileId);
+
+      // Return file info without sensitive data
+      res.status(200).json({
+        success: true,
+        message: 'File retrieved successfully',
+        data: {
+          _id: file._id,
+          originalName: file.originalName,
+          fileName: file.fileName,
+          mimeType: file.mimeType,
+          fileSize: file.fileSize,
+          fileType: file.fileType,
+          category: file.category,
+          uploadedBy: file.uploadedBy,
+          uploadDate: file.uploadDate,
+        },
+      });
+    } catch (error) {
+      const statusCode = error.message === 'File not found' ? 404 : 500;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || 'Failed to retrieve file',
+      });
+    }
+  }
+
+  async downloadPublicFile(req, res) {
+    try {
+      const { fileId } = req.params;
+
+      if (!fileId) {
+        return res.status(400).json({
+          success: false,
+          message: 'File ID is required',
+        });
+      }
+
+      const file = await fileUploadService.getFileById(fileId);
+
+      // Check if file exists on disk
+      if (!fs.existsSync(file.filePath)) {
+        return res.status(404).json({
+          success: false,
+          message: 'File not found on server',
+        });
+      }
+
+      // Set headers for download
+      res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
+      res.setHeader('Content-Type', file.mimeType);
+      res.setHeader('Content-Length', file.fileSize);
+
+      // Stream file to response
+      const fileStream = fs.createReadStream(file.filePath);
+      fileStream.pipe(res);
+    } catch (error) {
+      const statusCode = error.message === 'File not found' ? 404 : 500;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || 'Failed to download file',
+      });
+    }
+  }
 }
 
 module.exports = new FileUploadController();

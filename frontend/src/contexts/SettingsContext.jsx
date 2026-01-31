@@ -37,10 +37,11 @@ export const SettingsProvider = ({ children }) => {
 
   // Load settings on mount
   useEffect(() => {
-    // Check if we're on login page - don't make API calls if we are
+    // Check if we're on login page or public file viewer - don't make API calls
     const isLoginPage = window.location.pathname === '/login'
+    const isPublicRoute = window.location.pathname.startsWith('/file/')
     
-    if (isLoginPage) {
+    if (isLoginPage || isPublicRoute) {
       // Just use defaults and apply them
       setSettings(defaultSettings)
       applySettingsToDocument(defaultSettings)

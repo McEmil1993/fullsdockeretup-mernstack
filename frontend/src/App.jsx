@@ -14,6 +14,7 @@ import Charts from './pages/Charts'
 import Settings from './pages/Settings'
 import Profile from './pages/Profile'
 import FileUpload from './pages/FileUpload'
+import PublicFileViewer from './pages/PublicFileViewer'
 import TopNav from './components/TopNav'
 import SideNav from './components/SideNav'
 import Footer from './components/Footer'
@@ -134,25 +135,33 @@ const Layout = ({ children }) => {
   )
 }
 
-function App() {
+// Wrapper component to conditionally apply AuthProvider
+const AppRoutes = () => {
+  // Check if current path is a public route
+  const currentPath = window.location.pathname
+  const isPublicRoute = currentPath.startsWith('/file/')
+  
+  // Public route - render without AuthProvider
+  if (isPublicRoute) {
+    return (
+      <Routes>
+        <Route path="/file/:fileId" element={<PublicFileViewer />} />
+      </Routes>
+    )
+  }
+  
+  // Protected routes - render with AuthProvider
   return (
-    <SettingsProvider>
-      <AuthProvider>
-        <Router
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true,
-          }}
-        >
-          <Routes>
-            <Route 
-              path="/login" 
-              element={
-                <PublicRoute>
-                  <Login />
-                </PublicRoute>
-              } 
-            />
+    <AuthProvider>
+      <Routes>
+        <Route 
+          path="/login" 
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          } 
+        />
             <Route
               path="/dashboard"
               element={
@@ -263,10 +272,23 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </Router>
-      </AuthProvider>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </AuthProvider>
+  )
+}
+
+function App() {
+  return (
+    <SettingsProvider>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <AppRoutes />
+      </Router>
     </SettingsProvider>
   )
 }
