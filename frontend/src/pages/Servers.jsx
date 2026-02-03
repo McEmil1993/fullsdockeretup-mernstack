@@ -5,6 +5,11 @@ import Table from '../components/Table';
 import Button from '../components/Button';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Toast from '../components/Toast';
+import SkeletonTable from '../components/SkeletonTable';
+import ServerForm from '../components/servers/ServerForm';
+import ServerFilters from '../components/servers/ServerFilters';
+import ServerDetailsModal from '../components/servers/ServerDetailsModal';
+import ServerImportModal from '../components/servers/ServerImportModal';
 import * as serverService from '../services/servers';
 
 export default function Servers() {
@@ -254,8 +259,14 @@ export default function Servers() {
   const truncateText = (text, maxLength = 20) => {
     if (!text) return '';
     if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
+    return text.substring(0, maxLength);
   };
+
+  const truncateServices = (text) => {
+    const services = ['ssh', 'web', 'socket','back']
+    const found = services.filter(s => text.includes(s))
+    return found.join(', ') // "ssh" or "ssh, web" etc.
+  }
 
   // Handle view server details
   const handleView = (server) => {
@@ -318,14 +329,21 @@ export default function Servers() {
   const columns = [
     // { key: 'block', label: 'Block', sortable: true },
     // { key: 'group', label: 'Group', sortable: true },
-    { key: 'sshUser', label: 'SSH User', render: (value, row) => row ? truncateText(row.sshUser, 15) : '' },
-    { key: 'sshHost', label: 'SSH Host', render: (value, row) => row ? truncateText(row.sshHost, 20) : '' },
+    {
+      key: 'count',
+      label: '#',
+      sortable: false,
+      width: '50px',
+      render: (_, __, index) => index + 1, // starts at 1
+    },
+    { key: 'sshUser', label: 'User', render: (value, row) => row ? truncateText(row.sshUser, 17) : '' },
+    { key: 'sshHost', label: 'Host', render: (value, row) => row ? truncateText(row.sshHost, 17) : '' },
     // { key: 'sshPassword', label: 'SSH Password', render: (value, row) => row ? '••••••••' : '' },
-    { key: 'webHost', label: 'Web Host', render: (value, row) => row ? truncateText(row.webHost, 20) : '' },
-    { key: 'backendHost', label: 'Backend Host', render: (value, row) => row ? truncateText(row.backendHost, 20) : '' },
-    { key: 'socketHost', label: 'Socket Host', render: (value, row) => row ? truncateText(row.socketHost, 20) : '' },
+    { key: 'webHost', label: 'Domains', render: (value, row) => row ? truncateServices(row.sshHost) + ', ' + truncateServices(row.webHost) + ', ' + truncateServices(row.backendHost) + ', ' + truncateServices(row.socketHost) : '' },
+    // { key: 'backendHost', label: 'Backend Host', render: (value, row) => row ? truncateText(row.backendHost, 17) : '' },
+    // { key: 'socketHost', label: 'Socket Host', render: (value, row) => row ? truncateText(row.socketHost, 17) : '' },
     // { key: 'portsInsideDocker', label: 'Ports', render: (value, row) => row ? truncateText(row.portsInsideDocker, 15) : '' },
-    { key: 'status', label: 'Status', render: (value, row) => {
+    { key: 'status', label: 'Status', width: '10%', render: (value, row) => {
       if (!row) return null;
       const status = row.status || 'Active';
       return (
@@ -339,6 +357,7 @@ export default function Servers() {
     {
       key: 'actions',
       label: 'Actions',
+       width: '13%',
       render: (value, row) => {
         if (!row) return null;
         const status = row.status || 'Active';
@@ -456,59 +475,37 @@ export default function Servers() {
       </div>
 
       {/* Search and Items Per Page */}
-      <div className="flex justify-between items-center mb-4 gap-4">
-        <div className="flex-1 max-w-md">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search by block, group, host, user, ports..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <svg 
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-gray-600">Show:</label>
-          <select
-            value={itemsPerPage}
-            onChange={(e) => {
-              setItemsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
-          <span className="text-sm text-gray-600">entries</span>
-        </div>
-      </div>
+      <ServerFilters
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        itemsPerPage={itemsPerPage}
+        setItemsPerPage={(value) => {
+          setItemsPerPage(value);
+          setCurrentPage(1);
+        }}
+      />
 
       {/* Results Info */}
-      <div className="mb-2 text-sm text-gray-600">
-        Showing {filteredServers.length > 0 ? startIndex + 1 : 0} to {Math.min(endIndex, filteredServers.length)} of {filteredServers.length} entries
-        {searchQuery && ` (filtered from ${servers.length} total entries)`}
-      </div>
+      {!loading && (
+        <div className="mb-2 text-sm text-gray-600">
+          Showing {filteredServers.length > 0 ? startIndex + 1 : 0} to {Math.min(endIndex, filteredServers.length)} of {filteredServers.length} entries
+          {searchQuery && ` (filtered from ${servers.length} total entries)`}
+        </div>
+      )}
 
-      <Table
-        data={paginatedServers}
-        columns={columns}
-        loading={loading}
-        emptyMessage={searchQuery ? "No servers found matching your search" : "No servers found"}
-        showActions={false}
-      />
+      {loading ? (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+          <SkeletonTable rows={5} columns={7} />
+        </div>
+      ) : (
+        <Table
+          data={paginatedServers}
+          columns={columns}
+          loading={loading}
+          emptyMessage={searchQuery ? "No servers found matching your search" : "No servers found"}
+          showActions={false}
+        />
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (

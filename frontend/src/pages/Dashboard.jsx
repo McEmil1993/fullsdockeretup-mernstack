@@ -1,340 +1,398 @@
-import { useState, useEffect } from 'react'
-import { Users, UserCheck, Calendar, ClipboardCheck } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Container, Server, Upload, Users, Activity, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import Widget from '../components/Widget'
-import SkeletonCard from '../components/SkeletonCard'
-import SkeletonChart from '../components/SkeletonChart'
-import Skeleton from '../components/Skeleton'
+import SkeletonWidget from '../components/SkeletonWidget'
 import Toast from '../components/Toast'
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import * as studentService from '../services/students'
-import * as scheduleService from '../services/schedules'
-import * as attendanceService from '../services/attendance'
-import * as assessmentService from '../services/assessments'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import * as dockerService from '../services/docker'
+import * as serverService from '../services/servers'
+import * as userService from '../services/users'
+import { fileUploadService } from '../services/fileUploads'
 
 const Dashboard = () => {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
-    totalStudents: 0,
-    activeStudents: 0,
-    totalSchedules: 0,
-    attendanceRate: 0,
+    totalContainers: 0,
+    runningContainers: 0,
+    totalServers: 0,
+    totalUsers: 0,
+    totalFiles: 0,
   })
-  const [attendanceData, setAttendanceData] = useState([])
-  const [assessmentData, setAssessmentData] = useState([])
+  const [containerMetrics, setContainerMetrics] = useState([])
+  const [realtimeData, setRealtimeData] = useState([])
+  const maxDataPoints = 20
+  const intervalRef = useRef(null)
   const [toast, setToast] = useState({
     isOpen: false,
     message: '',
     type: 'success',
   })
 
-  // Get current school year (default to 2025-2026)
-  const currentSchoolYear = '2025-2026'
-  const currentTerm = 'prelim'
-
   // Load dashboard data
   const loadDashboardData = async () => {
     setLoading(true)
     try {
       // Load all data in parallel
-      const [studentsResponse, activeStudentsResponse, schedulesResponse] = await Promise.all([
-        studentService.getAllStudents({ page: 1, limit: 1 }), // Just to get total count
-        studentService.getAllStudents({ page: 1, limit: 1, status: 'active' }),
-        scheduleService.getAllSchedules({ page: 1, limit: 1 }), // Just to get total count
+      const [containersResponse, serversResponse, usersResponse, filesResponse] = await Promise.all([
+        dockerService.getAllContainers().catch(() => ({ data: [] })),
+        serverService.getAllServers({ page: 1, limit: 1 }).catch(() => ({ data: [], pagination: { total: 0 } })),
+        userService.getAllUsers({ page: 1, limit: 1 }).catch(() => ({ data: [], pagination: { total: 0 } })),
+        fileUploadService.getAllFiles(1, 1).catch(() => ({ data: [], pagination: { total: 0 } })),
       ])
+
+      const containers = containersResponse.data || []
+      const runningContainers = containers.filter(c => c.status?.toLowerCase().includes('running') || c.state === 'running')
+
+      // Get counts from responses
+      const serversCount = serversResponse.data?.length || serversResponse.pagination?.total || 0
+      const usersCount = usersResponse.data?.length || usersResponse.pagination?.total || 0  
+      const filesCount = filesResponse.data?.length || filesResponse.pagination?.total || 0
 
       // Update stats
       setStats({
-        totalStudents: studentsResponse.total_count || 0,
-        activeStudents: activeStudentsResponse.total_count || 0,
-        totalSchedules: schedulesResponse.total_count || 0,
-        attendanceRate: 0, // Will calculate later
+        totalContainers: containers.length,
+        runningContainers: runningContainers.length,
+        totalServers: serversCount,
+        totalUsers: usersCount,
+        totalFiles: filesCount,
       })
 
-      // Load schedules for attendance and assessment calculations
-      const allSchedulesResponse = await scheduleService.getAllSchedules({ page: 1, limit: 100 })
-      const schedules = allSchedulesResponse.schedules || []
+      // Set container metrics for graph
+      setContainerMetrics(runningContainers)
 
-      // Calculate attendance rate and get attendance data
-      await loadAttendanceData(schedules)
-
-      // Calculate assessment performance and get assessment data
-      await loadAssessmentData(schedules)
-
+      setLoading(false)
     } catch (error) {
-      showToast('Failed to load dashboard data. Please try again.', 'error')
-    } finally {
+      console.error('Error loading dashboard data:', error)
+      showToast(error.message || 'Failed to load dashboard data', 'error')
       setLoading(false)
     }
   }
 
-  // Load attendance data for charts
-  const loadAttendanceData = async (schedules) => {
+  // Fetch real-time container stats
+  const fetchContainerStats = async () => {
     try {
-      // Get attendance summaries for all schedules
-      const attendancePromises = schedules.map(async (schedule) => {
-        try {
-          const summaryResponse = await attendanceService.getAttendanceSummary({
-            scheduleId: schedule._id,
-            school_year: currentSchoolYear,
-            term: currentTerm,
-          })
-          return summaryResponse.data || []
-        } catch (error) {
-          return []
-        }
+      const containersResponse = await dockerService.getAllContainers()
+      const containers = containersResponse.data || []
+      const runningContainers = containers.filter(c => c.status?.toLowerCase().includes('running') || c.state === 'running')
+
+      // For demo: generate random data if no real stats available
+      // In production, this would come from docker stats command
+      const now = new Date()
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`
+
+      // Simulate CPU and Memory usage (replace with real docker stats in production)
+      const avgCpu = runningContainers.length > 0 ? Math.random() * 50 + 10 : 0 // 10-60%
+      const avgMemory = runningContainers.length > 0 ? Math.random() * 40 + 20 : 0 // 20-60%
+
+      const newDataPoint = {
+        time: timeStr,
+        cpu: parseFloat(avgCpu.toFixed(2)),
+        memory: parseFloat(avgMemory.toFixed(2)),
+        containers: runningContainers.map(c => c.name).join(', ') || 'None'
+      }
+
+      setRealtimeData(prevData => {
+        const newData = [...prevData, newDataPoint]
+        // Keep only last maxDataPoints
+        return newData.slice(-maxDataPoints)
       })
 
-      const allSummaries = await Promise.all(attendancePromises)
-      
-      // Aggregate attendance data
-      let totalPresent = 0
-      let totalAbsent = 0
-      let totalLate = 0
-      let totalExcused = 0
-
-      allSummaries.flat().forEach((summary) => {
-        totalPresent += summary.present || 0
-        totalAbsent += summary.absent || 0
-        totalLate += summary.late || 0
-        totalExcused += summary.excused || 0
-      })
-
-      const totalRecords = totalPresent + totalAbsent + totalLate + totalExcused
-      const attendanceRate = totalRecords > 0 
-        ? ((totalPresent / totalRecords) * 100).toFixed(1) 
-        : 0
-
-      // Update attendance rate in stats
-      setStats((prev) => ({
+      // Update stats
+      setStats(prev => ({
         ...prev,
-        attendanceRate: parseFloat(attendanceRate),
+        totalContainers: containers.length,
+        runningContainers: runningContainers.length,
       }))
 
-      // For chart data, we'll use monthly data if available
-      // For now, we'll create a simple representation with current data
-      // You can enhance this to fetch historical data by month
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
-      const chartData = months.map((month, index) => {
-        // Distribute current data across months for visualization
-        // In a real scenario, you'd fetch actual monthly data
-        const monthlyPresent = Math.round(totalPresent / 6) + Math.floor(Math.random() * 20)
-        const monthlyAbsent = Math.round(totalAbsent / 6) + Math.floor(Math.random() * 10)
-        return {
-          name: month,
-          present: monthlyPresent,
-          absent: monthlyAbsent,
-        }
-      })
-
-      setAttendanceData(chartData)
     } catch (error) {
-    }
-  }
-
-  // Load assessment data for charts
-  const loadAssessmentData = async (schedules) => {
-    try {
-      // Get assessments for all schedules
-      const assessmentPromises = schedules.map(async (schedule) => {
-        try {
-          const assessmentsResponse = await assessmentService.getAllAssessments({
-            scheduleId: schedule._id,
-            school_year: currentSchoolYear,
-            term: currentTerm,
-            page: 1,
-            limit: 100,
-          })
-          return assessmentsResponse.data || []
-        } catch (error) {
-          return []
-        }
-      })
-
-      const allAssessments = await Promise.all(assessmentPromises)
-      const flatAssessments = allAssessments.flat()
-
-      // Calculate average scores and passing rates
-      if (flatAssessments.length > 0) {
-        let totalScore = 0
-        let passingCount = 0
-        let totalCount = 0
-
-        flatAssessments.forEach((assessment) => {
-          if (assessment.scores && assessment.scores.exam_score) {
-            const examScore = parseFloat(assessment.scores.exam_score) || 0
-            totalScore += examScore
-            totalCount++
-            // Consider passing as 50% or above (you can adjust this threshold)
-            if (examScore >= 25) {
-              passingCount++
-            }
-          }
-        })
-
-        const averageScore = totalCount > 0 ? (totalScore / totalCount) : 0
-        const passingRate = totalCount > 0 ? ((passingCount / totalCount) * 100) : 0
-
-        // For chart data, distribute across months
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
-        const chartData = months.map((month, index) => {
-          // Distribute current data across months for visualization
-          // In a real scenario, you'd fetch actual monthly data
-          const monthlyAverage = averageScore + (Math.random() * 10 - 5) // Add some variation
-          const monthlyPassing = passingRate + (Math.random() * 5 - 2.5) // Add some variation
-          return {
-            name: month,
-            averageScore: Math.round(monthlyAverage * 10) / 10,
-            passingRate: Math.round(monthlyPassing * 10) / 10,
-          }
-        })
-
-        setAssessmentData(chartData)
-      } else {
-        // Set default empty data
-        setAssessmentData([
-          { name: 'Jan', averageScore: 0, passingRate: 0 },
-          { name: 'Feb', averageScore: 0, passingRate: 0 },
-          { name: 'Mar', averageScore: 0, passingRate: 0 },
-          { name: 'Apr', averageScore: 0, passingRate: 0 },
-          { name: 'May', averageScore: 0, passingRate: 0 },
-          { name: 'Jun', averageScore: 0, passingRate: 0 },
-        ])
-      }
-    } catch (error) {
+      console.error('Error fetching container stats:', error)
     }
   }
 
   useEffect(() => {
     loadDashboardData()
+
+    // Start real-time polling every 3 seconds
+    intervalRef.current = setInterval(() => {
+      fetchContainerStats()
+    }, 3000)
+
+    // Initial fetch
+    fetchContainerStats()
+
+    // Cleanup on unmount
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
   }, [])
 
   const showToast = (message, type = 'success') => {
     setToast({ isOpen: true, message, type })
   }
 
-  // Custom tooltip formatter for percentages
-  const formatTooltip = (value, name) => {
-    if (name === 'Average Score (%)' || name === 'Passing Rate (%)') {
-      return [`${value}%`, name]
-    }
-    return [value, name]
-  }
-
-  // Custom Y-axis formatter for percentages
-  const formatYAxis = (tickItem) => {
-    return `${tickItem}%`
-  }
-
-  // Format numbers with commas
   const formatNumber = (num) => {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-  }
-
-  if (loading) {
-    return (
-      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
-        <div>
-          <Skeleton variant="title" className="h-8 w-48 mb-2" />
-          <Skeleton variant="text" className="h-4 w-64" />
-        </div>
-
-        {/* Skeleton Widgets */}
-        <SkeletonCard count={4} />
-
-        {/* Skeleton Charts */}
-        <SkeletonChart count={2} />
-      </div>
-    )
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K'
+    return num.toString()
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+    <div className="space-y-6 p-6">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
           Dashboard
         </h1>
-        <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
-          Welcome back! Here's what's happening today.
+        <p className="text-gray-600 dark:text-gray-400 mt-1">
+          Docker Monitoring & Server Management Overview
         </p>
       </div>
 
-      {/* Widgets */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Widget
-          title="Total Students"
-          value={formatNumber(stats.totalStudents)}
-          change=""
-          icon={Users}
-          trend="up"
-          color="blue"
-        />
-        <Widget
-          title="Active Students"
-          value={formatNumber(stats.activeStudents)}
-          change=""
-          icon={UserCheck}
-          trend="up"
-          color="green"
-        />
-        <Widget
-          title="Total Schedules"
-          value={formatNumber(stats.totalSchedules)}
-          change=""
-          icon={Calendar}
-          trend="up"
-          color="yellow"
-        />
-        <Widget
-          title="Attendance Rate"
-          value={`${stats.attendanceRate}%`}
-          change=""
-          icon={ClipboardCheck}
-          trend={stats.attendanceRate >= 90 ? 'up' : 'down'}
-          color="purple"
-        />
+      {/* Stats Grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+          <SkeletonWidget />
+          <SkeletonWidget />
+          <SkeletonWidget />
+          <SkeletonWidget />
+          <SkeletonWidget />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+          <div onClick={() => navigate('/docker')} className="cursor-pointer transform hover:scale-105 transition-transform">
+            <Widget
+              icon={Container}
+              title="Total Containers"
+              value={formatNumber(stats.totalContainers)}
+              trend="neutral"
+              color="blue"
+            />
+          </div>
+          <div onClick={() => navigate('/docker')} className="cursor-pointer transform hover:scale-105 transition-transform">
+            <Widget
+              icon={Activity}
+              title="Running Containers"
+              value={formatNumber(stats.runningContainers)}
+              trend={stats.runningContainers > 0 ? 'up' : 'down'}
+              color="green"
+            />
+          </div>
+          <div onClick={() => navigate('/servers')} className="cursor-pointer transform hover:scale-105 transition-transform">
+            <Widget
+              icon={Server}
+              title="Servers"
+              value={formatNumber(stats.totalServers)}
+              trend="neutral"
+              color="indigo"
+            />
+          </div>
+          <div onClick={() => navigate('/user')} className="cursor-pointer transform hover:scale-105 transition-transform">
+            <Widget
+              icon={Users}
+              title="Users"
+              value={formatNumber(stats.totalUsers)}
+              trend="neutral"
+              color="purple"
+            />
+          </div>
+          <div onClick={() => navigate('/file-upload')} className="cursor-pointer transform hover:scale-105 transition-transform">
+            <Widget
+              icon={Upload}
+              title="Files"
+              value={formatNumber(stats.totalFiles)}
+              trend="neutral"
+              color="pink"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* System Status */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <Activity className="w-5 h-5" />
+          System Status
+        </h2>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center gap-3 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse">
+              <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24 mb-2"></div>
+                <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse">
+              <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24 mb-2"></div>
+                <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse">
+              <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24 mb-2"></div>
+                <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Docker Status */}
+            <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <Container className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+              <div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Docker Status</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {stats.totalContainers > 0 ? 'Active' : 'No Containers'}
+                </div>
+              </div>
+            </div>
+
+            {/* Running Status */}
+            <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              {stats.runningContainers > 0 ? (
+                <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+              ) : (
+                <XCircle className="w-8 h-8 text-gray-400" />
+              )}
+              <div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Running</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {stats.runningContainers} / {stats.totalContainers}
+                </div>
+              </div>
+            </div>
+
+            {/* Server Management */}
+            <div className="flex items-center gap-3 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+              <Server className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+              <div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Server Management</div>
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {stats.totalServers} Server{stats.totalServers !== 1 ? 's' : ''}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        {/* Line Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 border border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Attendance Overview
+      {/* Real-time Container Metrics Graph */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <Activity className="w-5 h-5" />
+            Real-time Container Metrics
           </h2>
-          <div className="h-[250px] md:h-[300px]">
+          {!loading && (
+            <div className="flex items-center gap-2 text-xs">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-gray-600 dark:text-gray-400">CPU %</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-gray-600 dark:text-gray-400">Memory %</span>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {loading ? (
+          <div className="h-[300px] bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse flex flex-col gap-3 p-4">
+            <div className="flex items-center justify-between">
+              <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+              <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+            </div>
+            <div className="flex-1 flex items-end gap-2">
+              <div className="h-24 bg-gray-300 dark:bg-gray-600 rounded w-full"></div>
+              <div className="h-32 bg-gray-300 dark:bg-gray-600 rounded w-full"></div>
+              <div className="h-40 bg-gray-300 dark:bg-gray-600 rounded w-full"></div>
+              <div className="h-28 bg-gray-300 dark:bg-gray-600 rounded w-full"></div>
+              <div className="h-36 bg-gray-300 dark:bg-gray-600 rounded w-full"></div>
+            </div>
+            <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-full"></div>
+          </div>
+        ) : realtimeData.length === 0 ? (
+          <div className="h-[300px] flex items-center justify-center text-gray-500 dark:text-gray-400">
+            <div className="text-center">
+              <Activity className="w-12 h-12 mx-auto mb-2 animate-pulse" />
+              <p>Loading real-time data...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={attendanceData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
+              <LineChart data={realtimeData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-300 dark:stroke-gray-600" />
+                <XAxis 
+                  dataKey="time" 
+                  className="text-xs"
+                  stroke="#888888"
+                  tick={{ fill: '#888888' }}
+                />
+                <YAxis 
+                  className="text-xs"
+                  stroke="#888888"
+                  tick={{ fill: '#888888' }}
+                  label={{ value: 'Usage (%)', angle: -90, position: 'insideLeft', fill: '#888888' }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+                    border: 'none', 
+                    borderRadius: '8px',
+                    color: '#fff'
+                  }}
+                  formatter={(value, name) => [`${value}%`, name]}
+                  labelFormatter={(label) => {
+                    const dataPoint = realtimeData.find(d => d.time === label)
+                    return dataPoint ? `${label}\nContainers: ${dataPoint.containers}` : label
+                  }}
+                />
                 <Legend />
-                <Line type="monotone" dataKey="present" stroke="#10b981" strokeWidth={2} name="Present" />
-                <Line type="monotone" dataKey="absent" stroke="#ef4444" strokeWidth={2} name="Absent" />
+                <Line 
+                  type="monotone" 
+                  dataKey="cpu" 
+                  stroke="#3b82f6" 
+                  strokeWidth={2} 
+                  name="CPU Usage"
+                  dot={false}
+                  isAnimationActive={false}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="memory" 
+                  stroke="#10b981" 
+                  strokeWidth={2} 
+                  name="Memory Usage"
+                  dot={false}
+                  isAnimationActive={false}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
-
-        {/* Bar Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 border border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            Assessment Performance
-          </h2>
-          <div className="h-[250px] md:h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={assessmentData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis domain={[0, 100]} tickFormatter={formatYAxis} />
-                <Tooltip formatter={formatTooltip} />
-                <Legend />
-                <Bar dataKey="averageScore" fill="#3b82f6" name="Average Score (%)" />
-                <Bar dataKey="passingRate" fill="#10b981" name="Passing Rate (%)" />
-              </BarChart>
-            </ResponsiveContainer>
+        )}
+        
+        {!loading && (
+          <div className="mt-4 flex flex-col gap-2">
+            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+              <span>Updates every 3 seconds</span>
+              <span>{stats.runningContainers} container{stats.runningContainers !== 1 ? 's' : ''} running</span>
+            </div>
+            {realtimeData.length > 0 && realtimeData[realtimeData.length - 1].containers !== 'None' && (
+              <div className="text-xs text-gray-600 dark:text-gray-400">
+                
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Toast Notification */}

@@ -5,18 +5,14 @@ import { SettingsProvider } from './contexts/SettingsContext'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import User from './pages/User'
-import Students from './pages/Students'
-import Attendance from './pages/Attendance'
-import Assessment from './pages/Assessment'
-import Schedule from './pages/Schedule'
-import Images from './pages/Images'
-import Charts from './pages/Charts'
 import Settings from './pages/Settings'
 import Profile from './pages/Profile'
 import FileUpload from './pages/FileUpload'
 import PublicFileViewer from './pages/PublicFileViewer'
 import Docker from './pages/Docker'
 import Servers from './pages/Servers'
+import Documents from './pages/Documents'
+import AIChat from './pages/AIChat'
 import TopNav from './components/TopNav'
 import SideNav from './components/SideNav'
 import Footer from './components/Footer'
@@ -185,66 +181,6 @@ const AppRoutes = () => {
               }
             />
             <Route
-              path="/students"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Students />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/attendance"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Attendance />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/assessment"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Assessment />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/schedule"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Schedule />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/images"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Images />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/charts"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Charts />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/settings"
               element={
                 <ProtectedRoute>
@@ -290,6 +226,26 @@ const AppRoutes = () => {
                 <ProtectedRoute>
                   <Layout>
                     <Servers />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/documents"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Documents />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ai-chat"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AIChat />
                   </Layout>
                 </ProtectedRoute>
               }

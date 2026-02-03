@@ -1,5 +1,4 @@
 import { Edit2, CheckCircle, XCircle, RotateCcw } from 'lucide-react'
-import Button from './Button'
 import { useState } from 'react'
 
 const Table = ({ 
@@ -40,6 +39,7 @@ const Table = ({
               )}
             </tr>
           </thead>
+
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {data.map((item, index) => (
               <tr
@@ -54,13 +54,14 @@ const Table = ({
                     className="px-3 md:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white"
                     style={col.width ? { width: col.width } : {}}
                   >
-                    {col.render ? col.render(item[col.key], item) : item[col.key]}
+                    {/* Render function supports index for count column */}
+                    {col.render ? col.render(item[col.key], item, index) : item[col.key]}
                   </td>
                 ))}
+
                 {showActions && (
                   <td className="px-3 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
-                     
                       {onEdit && (
                         <button
                           onClick={() => onEdit(item)}
@@ -70,7 +71,8 @@ const Table = ({
                           <Edit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         </button>
                       )}
-                       {onStatusChange && (
+
+                      {onStatusChange && (
                         <button
                           onClick={() => {
                             const newStatus = item.status === 'active' ? 'inactive' : 'active'
@@ -90,6 +92,7 @@ const Table = ({
                           )}
                         </button>
                       )}
+
                       {onResetPassword && (
                         <button
                           onClick={() => onResetPassword(item)}
@@ -107,6 +110,7 @@ const Table = ({
           </tbody>
         </table>
       </div>
+
       {data.length === 0 && (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           No data available

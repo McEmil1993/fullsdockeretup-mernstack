@@ -4,14 +4,12 @@ const cookieParser = require('cookie-parser');
 const userRoutes = require('./src/routes/userRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const appSettingsRoutes = require('./src/routes/appSettingsRoutes');
-const scheduleRoutes = require('./src/routes/scheduleRoutes');
-const studentRoutes = require('./src/routes/studentRoutes');
-const assessmentRoutes = require('./src/routes/assessmentRoutes');
-const attendanceRoutes = require('./src/routes/attendanceRoutes');
 const fileUploadRoutes = require('./src/routes/fileUploadRoutes');
 const dockerRoutes = require('./src/routes/dockerRoutes');
 const dockerActionLogRoutes = require('./src/routes/dockerActionLogRoutes');
 const serverRoutes = require('./src/routes/serverRoutes');
+const aiRoutes = require('./src/routes/aiRoutes');
+const conversationRoutes = require('./src/routes/conversationRoutes');
 const errorHandler = require('./src/middleware/errorHandler');
 
 const app = express();
@@ -54,14 +52,6 @@ app.use('/api/users', userRoutes);
 
 app.use('/api/app-settings', appSettingsRoutes);
 
-app.use('/api/schedules', scheduleRoutes);
-
-app.use('/api/students', studentRoutes);
-
-app.use('/api/assessments', assessmentRoutes);
-
-app.use('/api/attendance', attendanceRoutes);
-
 app.use('/api/file-uploads', fileUploadRoutes);
 
 app.use('/api/docker', dockerRoutes);
@@ -69,6 +59,10 @@ app.use('/api/docker', dockerRoutes);
 app.use('/api/docker-logs', dockerActionLogRoutes);
 
 app.use('/api/servers', serverRoutes);
+
+app.use('/api/ai', aiRoutes);
+
+app.use('/api/conversations', conversationRoutes);
 
 // Serve static files from public/uploads
 app.use('/api/uploads', express.static('public/uploads'));
