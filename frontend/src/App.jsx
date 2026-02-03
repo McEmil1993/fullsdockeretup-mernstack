@@ -15,6 +15,8 @@ import Settings from './pages/Settings'
 import Profile from './pages/Profile'
 import FileUpload from './pages/FileUpload'
 import PublicFileViewer from './pages/PublicFileViewer'
+import Docker from './pages/Docker'
+import Servers from './pages/Servers'
 import TopNav from './components/TopNav'
 import SideNav from './components/SideNav'
 import Footer from './components/Footer'
@@ -268,6 +270,26 @@ const AppRoutes = () => {
                 <ProtectedRoute>
                   <Layout>
                     <FileUpload />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/docker"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Docker />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/servers"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Servers />
                   </Layout>
                 </ProtectedRoute>
               }

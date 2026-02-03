@@ -64,7 +64,6 @@ export const AuthProvider = ({ children }) => {
         // Network error or other issues - don't auto-logout on network errors
         // Keep existing user state if it exists (might be temporary network issue)
         // Only clear if this is initial load (we'll know because user is null initially)
-        console.warn('Auth check failed (non-auth error):', error.message)
         // Don't change user state on network errors - keeps user logged in
         // Only set to null if it's the first check and no user exists
         // This is handled by React state persistence, so we can just not call setUser
@@ -106,11 +105,6 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.login(email, password)
       
       // Debug: Log the actual response to see what we're getting
-      console.log('=== LOGIN RESPONSE DEBUG ===')
-      console.log('Full response:', response)
-      console.log('Response type:', typeof response)
-      console.log('Response keys:', response ? Object.keys(response) : 'null')
-      console.log('===========================')
       
       // Handle different response structures
       // Backend returns: { success: true, message: '...', data: { user: {...} } }
@@ -121,17 +115,13 @@ export const AuthProvider = ({ children }) => {
         if (response.data && response.data.user && typeof response.data.user === 'object') {
           // Structure: { data: { user: {...} } }
           userData = response.data.user
-          console.log('Found user in response.data.user:', userData)
         } else if (response.user && typeof response.user === 'object') {
           // Structure: { user: {...} }
           userData = response.user
-          console.log('Found user in response.user:', userData)
         } else if (response.id || response._id || response.email || response.name) {
           // Response itself is the user object
           userData = response
-          console.log('Response is user object:', userData)
         } else {
-          console.warn('Unknown response structure:', response)
         }
       }
       
@@ -142,23 +132,16 @@ export const AuthProvider = ({ children }) => {
         
         if (hasUserFields) {
           // Valid user object found
-          console.log('✅ Valid user data found, setting user:', userData)
           setUser(userData)
           return { success: true, user: userData }
         } else {
-          console.warn('UserData found but missing required fields:', userData)
         }
       }
       
       // If no user data found in response, log for debugging
-      console.log('❌ Login failed: No valid user data in response')
-      console.log('Full response:', JSON.stringify(response, null, 2))
       return { success: false, error: 'Login failed: Invalid response from server. Please check console for details.' }
     } catch (error) {
       // Log the error for debugging
-      console.log('❌ Login error caught:', error)
-      console.log('Error message:', error.message)
-      console.log('Error stack:', error.stack)
       // Return the error message from the backend
       return { 
         success: false, 
@@ -172,7 +155,6 @@ export const AuthProvider = ({ children }) => {
       await authService.logout()
     } catch (error) {
       // Even if logout fails, clear local state
-      console.error('Logout error:', error)
     } finally {
       setUser(null)
     }

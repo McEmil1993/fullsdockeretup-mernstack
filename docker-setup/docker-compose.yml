@@ -1,6 +1,31 @@
 version: '3.8'
 
 services:
+  # WebSocket Service - Real-time Docker Monitoring
+  websocket:
+    build:
+      context: ../websocket-service
+      dockerfile: Dockerfile
+    container_name: docker-websocket-service
+    ports:
+      - "3060:3001"
+    volumes:
+      # Docker socket for monitoring containers
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - CORS_ORIGIN=https://websocket.markemilcajesdacoylo.online,http://localhost:5173
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
   # Backend Service - Production
   backend:
     build:
@@ -14,6 +39,8 @@ services:
       - uploads-data:/app/public/uploads
       # Optional: Mount .env file (recommended to use environment variables instead)
       - ../backend/.env.local:/app/.env.local:ro
+      # Docker socket for monitoring (read-only)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - NODE_ENV=production
       - PORT=3000

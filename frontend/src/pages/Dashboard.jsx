@@ -61,7 +61,6 @@ const Dashboard = () => {
       await loadAssessmentData(schedules)
 
     } catch (error) {
-      console.error('Failed to load dashboard data:', error)
       showToast('Failed to load dashboard data. Please try again.', 'error')
     } finally {
       setLoading(false)
@@ -81,7 +80,6 @@ const Dashboard = () => {
           })
           return summaryResponse.data || []
         } catch (error) {
-          console.warn(`Failed to load attendance summary for schedule ${schedule._id}:`, error)
           return []
         }
       })
@@ -130,7 +128,6 @@ const Dashboard = () => {
 
       setAttendanceData(chartData)
     } catch (error) {
-      console.error('Failed to load attendance data:', error)
     }
   }
 
@@ -149,7 +146,6 @@ const Dashboard = () => {
           })
           return assessmentsResponse.data || []
         } catch (error) {
-          console.warn(`Failed to load assessments for schedule ${schedule._id}:`, error)
           return []
         }
       })
@@ -205,7 +201,6 @@ const Dashboard = () => {
         ])
       }
     } catch (error) {
-      console.error('Failed to load assessment data:', error)
     }
   }
 

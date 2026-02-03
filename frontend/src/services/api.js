@@ -150,6 +150,14 @@ export async function put(endpoint, body) {
 }
 
 /**
+ * PATCH request
+ */
+export async function patch(endpoint, body) {
+  const response = await apiClient.patch(endpoint, body)
+  return { data: response.data, response }
+}
+
+/**
  * DELETE request
  */
 export async function del(endpoint) {
@@ -168,6 +176,7 @@ export default {
   get,
   post,
   put,
+  patch,
   delete: del,
   healthCheck,
 }

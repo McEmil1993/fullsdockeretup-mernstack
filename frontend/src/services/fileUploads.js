@@ -14,7 +14,6 @@ export const fileUploadService = {
       const response = await api.post('/api/file-uploads/upload', formData, {
         onUploadProgress: (progressEvent) => {
           if (onProgress) {
-            console.log("aass",progressEvent);
             
             onProgress(progressEvent)
           }
@@ -30,7 +29,6 @@ export const fileUploadService = {
   getAllFiles: async (page = 1, limit = 10, category = 'all', search = '') => {
     try {
       
-      // console.log("kkkkk");
 
       
       const response = await api.post('/api/file-uploads/get-all', {
@@ -239,7 +237,6 @@ export const fileUploadService = {
         try {
           await fileUploadService.cancelChunkedUpload(uploadId)
         } catch (cancelError) {
-          console.error('Failed to cancel upload:', cancelError)
         }
       }
       throw error

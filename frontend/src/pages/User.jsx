@@ -41,7 +41,6 @@ const User = () => {
       setAllData(mappedUsers)
       setTotalCount(response.total_count || response.total || 0)
     } catch (error) {
-      console.error('Failed to load users:', error)
       showToast('Failed to load users. Please try again.', 'error')
       setAllData([])
       setTotalCount(0)
@@ -247,7 +246,6 @@ const User = () => {
       })
       .catch((error) => {
         // Silently fail - we already have the item data from the list
-        console.warn('Failed to fetch latest user data (using cached data):', error)
       })
   }
 
@@ -301,7 +299,6 @@ const User = () => {
         const statusText = newStatus === 'active' ? 'active' : 'inactive'
         showToast(`${item.name} has been set to ${statusText}`, 'success')
       } catch (error) {
-        console.error('Failed to update user status:', error)
         showToast('Failed to update user status. Please try again.', 'error')
       }
     }
@@ -344,7 +341,6 @@ const User = () => {
         setResetPasswordDialog({ isOpen: false, item: null })
         showToast('Password reset successfully', 'success')
       } catch (error) {
-        console.error('Failed to reset password:', error)
         showToast(error.message || 'Failed to reset password. Please try again.', 'error')
         setResetPasswordDialog({ isOpen: false, item: null })
       }
@@ -430,7 +426,6 @@ const User = () => {
       setErrors({ name: '', email: '', role: '', password: '' })
       setTouched({ name: false, email: false, role: false, password: false })
     } catch (error) {
-      console.error('Failed to save user:', error)
       showToast(error.message || 'An error occurred. Please try again.', 'error')
     } finally {
       setLoading(false)

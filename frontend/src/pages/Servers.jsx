@@ -1,0 +1,1256 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import Modal from '../components/Modal';
+import Table from '../components/Table';
+import Button from '../components/Button';
+import ConfirmDialog from '../components/ConfirmDialog';
+import Toast from '../components/Toast';
+import * as serverService from '../services/servers';
+
+export default function Servers() {
+  const { user } = useAuth();
+  const [servers, setServers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingServer, setEditingServer] = useState(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [serverToDeactivate, setServerToDeactivate] = useState(null);
+  const [filterStatus, setFilterStatus] = useState('Active');
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [skipDuplicates, setSkipDuplicates] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewingServer, setViewingServer] = useState(null);
+  const [copiedField, setCopiedField] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const [formData, setFormData] = useState({
+    block: '',
+    group: '',
+    sshUser: 'root',
+    sshHost: '',
+    sshPassword: '',
+    webHost: '',
+    backendHost: '',
+    socketHost: '',
+    portsInsideDocker: '3000 / 3001 / 3002'
+  });
+
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    fetchServers();
+  }, [filterStatus]);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+  };
+
+  const fetchServers = async () => {
+    try {
+      setLoading(true);
+      const filters = filterStatus ? { status: filterStatus } : {};
+      const data = await serverService.getAllServers(filters);
+      // Filter out any invalid/null/undefined entries
+      const validServers = Array.isArray(data) ? data.filter(server => server && typeof server === 'object') : [];
+      setServers(validServers);
+    } catch (error) {
+      showToast('Error fetching servers: ' + error.message, 'error');
+      setServers([]); // Set empty array on error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.block || formData.block < 1) {
+      newErrors.block = 'Block is required and must be positive';
+    }
+    if (!formData.group || formData.group < 1) {
+      newErrors.group = 'Group is required and must be positive';
+    }
+    if (!formData.sshUser?.trim()) {
+      newErrors.sshUser = 'SSH User is required';
+    }
+    if (!formData.sshHost?.trim()) {
+      newErrors.sshHost = 'SSH Host is required';
+    }
+    if (!formData.sshPassword?.trim()) {
+      newErrors.sshPassword = 'SSH Password is required';
+    }
+    if (!formData.webHost?.trim()) {
+      newErrors.webHost = 'Web Host is required';
+    }
+    if (!formData.backendHost?.trim()) {
+      newErrors.backendHost = 'Backend Host is required';
+    }
+    if (!formData.socketHost?.trim()) {
+      newErrors.socketHost = 'Socket Host is required';
+    }
+    if (!formData.portsInsideDocker?.trim()) {
+      newErrors.portsInsideDocker = 'Ports are required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      showToast('Please fix the form errors', 'error');
+      return;
+    }
+
+    try {
+      if (editingServer) {
+        await serverService.updateServer(editingServer._id, formData);
+        showToast('Server updated successfully', 'success');
+      } else {
+        await serverService.createServer(formData);
+        showToast('Server created successfully', 'success');
+      }
+      
+      setShowModal(false);
+      resetForm();
+      fetchServers();
+    } catch (error) {
+      showToast('Error: ' + error.message, 'error');
+    }
+  };
+
+  const handleEdit = (server) => {
+    setEditingServer(server);
+    setFormData({
+      block: server.block,
+      group: server.group,
+      sshUser: server.sshUser,
+      sshHost: server.sshHost,
+      sshPassword: server.sshPassword,
+      webHost: server.webHost,
+      backendHost: server.backendHost,
+      socketHost: server.socketHost,
+      portsInsideDocker: server.portsInsideDocker
+    });
+    setShowModal(true);
+  };
+
+  const handleDeactivate = (server) => {
+    setServerToDeactivate(server);
+    setShowConfirmDialog(true);
+  };
+
+  const confirmDeactivate = async () => {
+    try {
+      await serverService.deactivateServer(serverToDeactivate._id);
+      showToast('Server deactivated successfully', 'success');
+      setShowConfirmDialog(false);
+      setServerToDeactivate(null);
+      fetchServers();
+    } catch (error) {
+      showToast('Error deactivating server: ' + error.message, 'error');
+    }
+  };
+
+  const handleReactivate = async (serverId) => {
+    try {
+      await serverService.reactivateServer(serverId);
+      showToast('Server reactivated successfully', 'success');
+      fetchServers();
+    } catch (error) {
+      showToast('Error reactivating server: ' + error.message, 'error');
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file extension
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (ext !== 'xlsx' && ext !== 'xls') {
+        showToast('Invalid file format. Please upload .xlsx or .xls file', 'error');
+        e.target.value = '';
+        return;
+      }
+      setImportFile(file);
+    }
+  };
+
+  const handleImportExcel = async () => {
+    if (!importFile) {
+      showToast('Please select a file to import', 'error');
+      return;
+    }
+
+    try {
+      setImporting(true);
+      setUploadProgress(0);
+      
+      const result = await serverService.importServersFromExcel(importFile, skipDuplicates, (progressEvent) => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        setUploadProgress(percentCompleted);
+      });
+      
+      showToast(
+        `Import completed: ${result.data.success} servers imported, ${result.data.failed} failed${result.data.skipped ? `, ${result.data.skipped} skipped` : ''}`,
+        result.data.failed > 0 ? 'warning' : 'success'
+      );
+      
+      setShowImportModal(false);
+      setImportFile(null);
+      setSkipDuplicates(false);
+      setUploadProgress(0);
+      fetchServers();
+    } catch (error) {
+      showToast('Error importing servers: ' + error.message, 'error');
+      setUploadProgress(0);
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      block: '',
+      group: '',
+      sshUser: 'root',
+      sshHost: '',
+      sshPassword: '',
+      webHost: '',
+      backendHost: '',
+      socketHost: '',
+      portsInsideDocker: '3000 / 3001 / 3002'
+    });
+    setEditingServer(null);
+    setErrors({});
+  };
+
+  const handleAddNew = () => {
+    resetForm();
+    setShowModal(true);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'block' || name === 'group' ? parseInt(value) || '' : value
+    }));
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  // Truncate long text for table display
+  const truncateText = (text, maxLength = 20) => {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
+  // Handle view server details
+  const handleView = (server) => {
+    setViewingServer(server);
+    setShowViewModal(true);
+  };
+
+  // Copy to clipboard
+  const copyToClipboard = async (text, fieldName) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(fieldName);
+      showToast(`${fieldName} copied to clipboard`, 'success');
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (error) {
+      showToast('Failed to copy to clipboard', 'error');
+    }
+  };
+
+  // Download server as Excel
+  const downloadServerAsExcel = async (server) => {
+    try {
+      // Create Excel-like data structure
+      const excelData = [
+        ['Field', 'Value'],
+        ['Block', server.block],
+        ['Group', server.group],
+        ['SSH User', server.sshUser],
+        ['SSH Host', server.sshHost],
+        ['SSH Password', server.sshPassword],
+        ['Web Host', server.webHost],
+        ['Backend Host', server.backendHost],
+        ['Socket Host', server.socketHost],
+        ['Ports (Inside Docker)', server.portsInsideDocker],
+        ['Status', server.status]
+      ];
+
+      // Convert to CSV format
+      const csvContent = excelData.map(row => row.join(',')).join('\n');
+      
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `server_block${server.block}_group${server.group}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showToast('Server data downloaded successfully', 'success');
+    } catch (error) {
+      showToast('Failed to download server data', 'error');
+    }
+  };
+
+  const columns = [
+    // { key: 'block', label: 'Block', sortable: true },
+    // { key: 'group', label: 'Group', sortable: true },
+    { key: 'sshUser', label: 'SSH User', render: (value, row) => row ? truncateText(row.sshUser, 15) : '' },
+    { key: 'sshHost', label: 'SSH Host', render: (value, row) => row ? truncateText(row.sshHost, 20) : '' },
+    // { key: 'sshPassword', label: 'SSH Password', render: (value, row) => row ? '••••••••' : '' },
+    { key: 'webHost', label: 'Web Host', render: (value, row) => row ? truncateText(row.webHost, 20) : '' },
+    { key: 'backendHost', label: 'Backend Host', render: (value, row) => row ? truncateText(row.backendHost, 20) : '' },
+    { key: 'socketHost', label: 'Socket Host', render: (value, row) => row ? truncateText(row.socketHost, 20) : '' },
+    // { key: 'portsInsideDocker', label: 'Ports', render: (value, row) => row ? truncateText(row.portsInsideDocker, 15) : '' },
+    { key: 'status', label: 'Status', render: (value, row) => {
+      if (!row) return null;
+      const status = row.status || 'Active';
+      return (
+        <span className={`px-2 py-1 rounded text-xs ${
+          status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+        }`}>
+          {status}
+        </span>
+      );
+    }},
+    {
+      key: 'actions',
+      label: 'Actions',
+      render: (value, row) => {
+        if (!row) return null;
+        const status = row.status || 'Active';
+        const canManage = user?.role === 'admin' || user?.role === 'teacher';
+        
+        return (
+          <div className="flex gap-1 flex-wrap justify-start">
+            <button
+              onClick={() => handleView(row)}
+              className="p-1.5 rounded hover:bg-blue-100 transition-colors"
+              title="View Details"
+            >
+              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+            {canManage && status === 'Active' && (
+              <>
+                <button
+                  onClick={() => handleEdit(row)}
+                  className="p-1.5 rounded hover:bg-yellow-100 transition-colors"
+                  title="Edit"
+                >
+                  <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => handleDeactivate(row)}
+                  className="p-1.5 rounded hover:bg-red-100 transition-colors"
+                  title="Deactivate"
+                >
+                  <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </>
+            )}
+            {canManage && status !== 'Active' && (
+              <button
+                onClick={() => handleReactivate(row._id)}
+                className="p-1.5 rounded hover:bg-green-100 transition-colors"
+                title="Reactivate"
+              >
+                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            )}
+          </div>
+        );
+      }
+    }
+  ];
+
+  const canManageServers = user?.role === 'admin' || user?.role === 'teacher';
+
+  // Filter and search servers
+  const filteredServers = servers.filter(server => {
+    if (!searchQuery) return true;
+    
+    const query = searchQuery.toLowerCase();
+    return (
+      server.block?.toString().includes(query) ||
+      server.group?.toString().includes(query) ||
+      server.sshUser?.toLowerCase().includes(query) ||
+      server.sshHost?.toLowerCase().includes(query) ||
+      server.webHost?.toLowerCase().includes(query) ||
+      server.backendHost?.toLowerCase().includes(query) ||
+      server.socketHost?.toLowerCase().includes(query) ||
+      server.portsInsideDocker?.toLowerCase().includes(query)
+    );
+  });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredServers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedServers = filteredServers.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Servers Management</h1>
+        <div className="flex gap-4 items-center">
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All Servers</option>
+            <option value="Active">Active</option>
+            <option value="Deactivated">Deactivated</option>
+          </select>
+          {canManageServers && (
+            <>
+              <Button 
+                variant="secondary" 
+                onClick={() => setShowImportModal(true)}
+              >
+                Import Excel
+              </Button>
+              <Button onClick={handleAddNew}>
+                Add New Server
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Search and Items Per Page */}
+      <div className="flex justify-between items-center mb-4 gap-4">
+        <div className="flex-1 max-w-md">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search by block, group, host, user, ports..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <svg 
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-gray-600">Show:</label>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => {
+              setItemsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+          <span className="text-sm text-gray-600">entries</span>
+        </div>
+      </div>
+
+      {/* Results Info */}
+      <div className="mb-2 text-sm text-gray-600">
+        Showing {filteredServers.length > 0 ? startIndex + 1 : 0} to {Math.min(endIndex, filteredServers.length)} of {filteredServers.length} entries
+        {searchQuery && ` (filtered from ${servers.length} total entries)`}
+      </div>
+
+      <Table
+        data={paginatedServers}
+        columns={columns}
+        loading={loading}
+        emptyMessage={searchQuery ? "No servers found matching your search" : "No servers found"}
+        showActions={false}
+      />
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex justify-between items-center">
+          <div className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              First
+            </button>
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            
+            {/* Page Numbers */}
+            {[...Array(totalPages)].map((_, index) => {
+              const pageNum = index + 1;
+              // Show first page, last page, current page, and pages around current
+              if (
+                pageNum === 1 ||
+                pageNum === totalPages ||
+                (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+              ) {
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`px-3 py-1 border rounded ${
+                      currentPage === pageNum
+                        ? 'bg-blue-500 text-white'
+                        : 'hover:bg-gray-100'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              } else if (
+                pageNum === currentPage - 2 ||
+                pageNum === currentPage + 2
+              ) {
+                return <span key={pageNum} className="px-2">...</span>;
+              }
+              return null;
+            })}
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Last
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Add/Edit Server Modal */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false);
+          resetForm();
+        }}
+        title={
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${editingServer ? 'bg-yellow-100' : 'bg-green-100'}`}>
+              <svg className={`w-6 h-6 ${editingServer ? 'text-yellow-600' : 'text-green-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {editingServer ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                )}
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold">{editingServer ? 'Edit Server' : 'Add New Server'}</h3>
+              <p className="text-sm text-gray-500">{editingServer ? 'Update server configuration' : 'Create a new server entry'}</p>
+            </div>
+          </div>
+        }
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Block & Group Section */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              Server Identification
+            </h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Block <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="block"
+                  value={formData.block}
+                  onChange={handleChange}
+                  min="1"
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    errors.block ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
+                  placeholder="e.g., 1"
+                />
+                {errors.block && (
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {errors.block}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Group <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="group"
+                  value={formData.group}
+                  onChange={handleChange}
+                  min="1"
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    errors.group ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
+                  placeholder="e.g., 1"
+                />
+                {errors.group && (
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {errors.group}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* SSH Connection Section */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              SSH Connection
+            </h4>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                SSH User <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  name="sshUser"
+                  value={formData.sshUser}
+                  onChange={handleChange}
+                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    errors.sshUser ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
+                  placeholder="e.g., root"
+                />
+              </div>
+              {errors.sshUser && (
+                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {errors.sshUser}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                SSH Host <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  name="sshHost"
+                  value={formData.sshHost}
+                  onChange={handleChange}
+                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    errors.sshHost ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
+                  placeholder="e.g., server.example.com"
+                />
+              </div>
+              {errors.sshHost && (
+                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {errors.sshHost}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                SSH Password <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <input
+                  type="password"
+                  name="sshPassword"
+                  value={formData.sshPassword}
+                  onChange={handleChange}
+                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    errors.sshPassword ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
+                  placeholder="Enter SSH password"
+                />
+              </div>
+              {errors.sshPassword && (
+                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {errors.sshPassword}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Host Configuration Section */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+              </svg>
+              Host Configuration
+            </h4>
+
+            {[
+              { name: 'webHost', label: 'Web Host', icon: '🌐', placeholder: 'e.g., web.example.com' },
+              { name: 'backendHost', label: 'Backend Host', icon: '⚙️', placeholder: 'e.g., api.example.com' },
+              { name: 'socketHost', label: 'Socket Host', icon: '🔌', placeholder: 'e.g., socket.example.com' }
+            ].map((field) => (
+              <div key={field.name}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {field.icon} {field.label} <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name={field.name}
+                  value={formData[field.name]}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                    errors[field.name] ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
+                  placeholder={field.placeholder}
+                />
+                {errors[field.name] && (
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {errors[field.name]}
+                  </p>
+                )}
+              </div>
+            ))}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                🔢 Ports (Inside Docker) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="portsInsideDocker"
+                value={formData.portsInsideDocker}
+                onChange={handleChange}
+                className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                  errors.portsInsideDocker ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                }`}
+                placeholder="e.g., 3000 / 3001 / 3002"
+              />
+              {errors.portsInsideDocker && (
+                <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {errors.portsInsideDocker}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-6 border-t">
+            <button
+              type="button"
+              onClick={() => {
+                setShowModal(false);
+                resetForm();
+              }}
+              className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={`px-6 py-2.5 rounded-lg text-white transition-all shadow-md hover:shadow-lg flex items-center gap-2 ${
+                editingServer 
+                  ? 'bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700'
+                  : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {editingServer ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                )}
+              </svg>
+              {editingServer ? 'Update Server' : 'Create Server'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Import Excel Modal */}
+      <Modal
+        isOpen={showImportModal}
+        onClose={() => {
+          setShowImportModal(false);
+          setImportFile(null);
+          setSkipDuplicates(false);
+          setUploadProgress(0);
+        }}
+        title="Import Servers from Excel"
+      >
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm text-gray-600 mb-4">
+              Upload an Excel file (.xlsx or .xls) with the following columns:
+            </p>
+            <ul className="text-sm text-gray-600 list-disc list-inside mb-4">
+              <li>Block</li>
+              <li>Group</li>
+              <li>SSH User</li>
+              <li>SSH Host</li>
+              <li>SSH Password</li>
+              <li>Web Host</li>
+              <li>Backend Host</li>
+              <li>Socket Host</li>
+              <li>Ports inside Docker</li>
+            </ul>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Select Excel File <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleFileChange}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={importing}
+            />
+            {importFile && (
+              <p className="text-sm text-green-600 mt-2">
+                Selected: {importFile.name}
+              </p>
+            )}
+          </div>
+
+          {/* Skip Duplicates Checkbox */}
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="skipDuplicates"
+              checked={skipDuplicates}
+              onChange={(e) => setSkipDuplicates(e.target.checked)}
+              disabled={importing}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="skipDuplicates" className="text-sm font-medium text-gray-700 cursor-pointer">
+              Skip Duplicates (Don't update existing servers with same Block and Group)
+            </label>
+          </div>
+
+          {/* Progress Bar */}
+          {importing && uploadProgress > 0 && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Uploading...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+
+          <div className={`border rounded-lg p-3 ${skipDuplicates ? 'bg-blue-50 border-blue-200' : 'bg-yellow-50 border-yellow-200'}`}>
+            <p className={`text-sm ${skipDuplicates ? 'text-blue-800' : 'text-yellow-800'}`}>
+              <strong>Note:</strong> {skipDuplicates 
+                ? 'Servers with the same Block and Group will be skipped. Only new servers will be added.' 
+                : 'If a server with the same Block and Group already exists, it will be updated with the new data.'}
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setShowImportModal(false);
+                setImportFile(null);
+                setSkipDuplicates(false);
+                setUploadProgress(0);
+              }}
+              disabled={importing}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleImportExcel}
+              disabled={!importFile || importing}
+            >
+              {importing ? `Importing... ${uploadProgress}%` : 'Import'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Deactivate Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        onClose={() => {
+          setShowConfirmDialog(false);
+          setServerToDeactivate(null);
+        }}
+        onConfirm={confirmDeactivate}
+        title="Deactivate Server"
+        message={`Are you sure you want to deactivate Block ${serverToDeactivate?.block} Group ${serverToDeactivate?.group}?`}
+        confirmText="Deactivate"
+        cancelText="Cancel"
+      />
+
+      {/* View Server Modal */}
+      <Modal
+        isOpen={showViewModal}
+        onClose={() => {
+          setShowViewModal(false);
+          setViewingServer(null);
+        }}
+        title={
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold">Server Details</h3>
+              <p className="text-sm text-gray-500">Block {viewingServer?.block} • Group {viewingServer?.group}</p>
+            </div>
+          </div>
+        }
+      >
+        {viewingServer && (
+          <div className="space-y-6">
+            {/* Status Badge */}
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-full ${viewingServer.status === 'Active' ? 'bg-green-100' : 'bg-gray-100'}`}>
+                  <svg className={`w-5 h-5 ${viewingServer.status === 'Active' ? 'text-green-600' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium uppercase">Status</p>
+                  <p className={`text-sm font-semibold ${viewingServer.status === 'Active' ? 'text-green-700' : 'text-gray-700'}`}>
+                    {viewingServer.status}
+                  </p>
+                </div>
+              </div>
+              <span className={`px-4 py-1.5 rounded-full text-xs font-semibold ${
+                viewingServer.status === 'Active' 
+                  ? 'bg-green-100 text-green-800 border border-green-200' 
+                  : 'bg-gray-100 text-gray-800 border border-gray-200'
+              }`}>
+                {viewingServer.status === 'Active' ? '● Online' : '○ Offline'}
+              </span>
+            </div>
+
+            {/* Server Info Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Block */}
+              <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                  <span className="text-xs font-medium text-purple-700 uppercase">Block</span>
+                </div>
+                <p className="text-2xl font-bold text-purple-900">{viewingServer.block}</p>
+              </div>
+
+              {/* Group */}
+              <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <span className="text-xs font-medium text-blue-700 uppercase">Group</span>
+                </div>
+                <p className="text-2xl font-bold text-blue-900">{viewingServer.group}</p>
+              </div>
+            </div>
+
+            {/* Connection Details */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Connection Details
+              </h4>
+              
+              <div className="space-y-2">
+                {/* SSH User */}
+                <div className="group p-3 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 transition-all">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span className="text-xs text-gray-500 font-medium">SSH User</span>
+                      </div>
+                      <p className="text-sm font-mono text-gray-900 ml-6">{viewingServer.sshUser}</p>
+                    </div>
+                    <button
+                      onClick={() => copyToClipboard(viewingServer.sshUser, 'SSH User')}
+                      className="ml-2 p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                      title="Copy SSH User"
+                    >
+                      {copiedField === 'SSH User' ? (
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* SSH Host */}
+                <div className="group p-3 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 transition-all">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                        </svg>
+                        <span className="text-xs text-gray-500 font-medium">SSH Host</span>
+                      </div>
+                      <p className="text-sm font-mono text-gray-900 break-all ml-6">{viewingServer.sshHost}</p>
+                    </div>
+                    <button
+                      onClick={() => copyToClipboard(viewingServer.sshHost, 'SSH Host')}
+                      className="ml-2 p-2 hover:bg-blue-100 rounded-lg transition-colors flex-shrink-0"
+                      title="Copy SSH Host"
+                    >
+                      {copiedField === 'SSH Host' ? (
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* SSH Password */}
+                <div className="group p-3 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 transition-all">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <span className="text-xs text-gray-500 font-medium">SSH Password</span>
+                      </div>
+                      <p className="text-sm font-mono text-gray-900 ml-6">••••••••••••</p>
+                    </div>
+                    <button
+                      onClick={() => copyToClipboard(viewingServer.sshPassword, 'SSH Password')}
+                      className="ml-2 p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                      title="Copy SSH Password"
+                    >
+                      {copiedField === 'SSH Password' ? (
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Host Information */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                </svg>
+                Host Information
+              </h4>
+              
+              <div className="grid gap-2">
+                {[
+                  { icon: '🌐', label: 'Web Host', value: viewingServer.webHost, field: 'Web Host' },
+                  { icon: '⚙️', label: 'Backend Host', value: viewingServer.backendHost, field: 'Backend Host' },
+                  { icon: '🔌', label: 'Socket Host', value: viewingServer.socketHost, field: 'Socket Host' },
+                  { icon: '🔢', label: 'Ports', value: viewingServer.portsInsideDocker, field: 'Ports' }
+                ].map((item, index) => (
+                  <div key={index} className="group p-3 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm">{item.icon}</span>
+                          <span className="text-xs text-gray-500 font-medium">{item.label}</span>
+                        </div>
+                        <p className="text-sm font-mono text-gray-900 break-all ml-6">{item.value}</p>
+                      </div>
+                      <button
+                        onClick={() => copyToClipboard(item.value, item.field)}
+                        className="ml-2 p-2 hover:bg-blue-100 rounded-lg transition-colors flex-shrink-0"
+                        title={`Copy ${item.label}`}
+                      >
+                        {copiedField === item.field ? (
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-between gap-3 pt-4 border-t">
+              <button
+                onClick={() => downloadServerAsExcel(viewingServer)}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download Excel
+              </button>
+              <button
+                onClick={() => {
+                  setShowViewModal(false);
+                  setViewingServer(null);
+                }}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+
+      {/* Toast Notification */}
+      <Toast
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
+    </div>
+  );
+}

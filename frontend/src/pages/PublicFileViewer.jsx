@@ -53,7 +53,6 @@ const PublicFileViewer = () => {
         setError(data.message || 'File not found')
       }
     } catch (err) {
-      console.error('Error fetching file:', err)
       setError('Failed to load file. Please check your connection.')
     } finally {
       setLoading(false)

@@ -42,7 +42,6 @@ const Students = () => {
       setAllData(mappedStudents)
       setTotalCount(response.total_count || response.total || 0)
     } catch (error) {
-      console.error('Failed to load students:', error)
       showToast('Failed to load students. Please try again.', 'error')
       setAllData([])
       setTotalCount(0)
@@ -281,7 +280,6 @@ const Students = () => {
           }
         })
         .catch((error) => {
-          console.warn('Failed to fetch latest student data:', error)
         })
     }
   }
@@ -334,7 +332,6 @@ const Students = () => {
         const statusText = newStatus === 'active' ? 'active' : newStatus === 'inactive' ? 'inactive' : newStatus
         showToast(`${item.fullName} has been set to ${statusText}`, 'success')
       } catch (error) {
-        console.error('Failed to update student status:', error)
         showToast(error.message || 'Failed to update student status. Please try again.', 'error')
       }
     }
@@ -370,7 +367,6 @@ const Students = () => {
         await loadStudents(currentPage, pageSize)
         showToast('Student updated successfully', 'success')
       } else {
-        // console.log("formData" ,  formData);
         
         // Create new student
         const newStudentData = {
@@ -395,7 +391,6 @@ const Students = () => {
       setErrors({ studentId: '', lastName: '', firstName: '', course: '', gender: '' })
       setTouched({ studentId: false, lastName: false, firstName: false, course: false, gender: false })
     } catch (error) {
-      console.error('Failed to save student:', error)
       showToast(error.message || 'An error occurred. Please try again.', 'error')
     } finally {
       setLoading(false)

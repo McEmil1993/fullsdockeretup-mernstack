@@ -60,7 +60,6 @@ const FileUpload = () => {
     try {
       setIsLoading(true)
       
-      // console.log("asass");
       
 
       const response = await fileUploadService.getAllFiles(

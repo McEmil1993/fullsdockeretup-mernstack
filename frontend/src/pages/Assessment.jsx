@@ -286,7 +286,6 @@ const Assessment = () => {
 
     setSchedules(mappedSchedules)
   } catch (error) {
-    console.error('Failed to load schedules:', error)
     showToast('Failed to load schedules. Please try again.', 'error')
   }
 }
@@ -331,7 +330,6 @@ const Assessment = () => {
         })
       }
     } catch (error) {
-      console.error('Failed to load highest scores:', error)
       // On error, show empty inputs (no defaults)
       setMaxScores({
         quizzes: Array(10).fill(''),
@@ -422,7 +420,6 @@ const Assessment = () => {
                   studentDetailsMap.set(studentId, studentResponse.student)
                 }
               } catch (error) {
-                console.warn(`Failed to fetch student details for ${studentId}:`, error)
               }
             }
           })
@@ -466,7 +463,6 @@ const Assessment = () => {
         await createAssessmentsFromScheduleStudents()
       }
     } catch (error) {
-      console.error('Failed to load assessments:', error)
       // On error, try to create from schedule
       await createAssessmentsFromScheduleStudents()
     } finally {
@@ -505,7 +501,6 @@ const Assessment = () => {
             })
           } catch (error) {
             // Skip if assessment already exists or other error
-            console.warn(`Failed to create assessment for student ${studentId}:`, error.message)
           }
         }
 
@@ -533,7 +528,6 @@ const Assessment = () => {
                   studentDetailsMap.set(studentId, studentResponse.student)
                 }
               } catch (error) {
-                console.warn(`Failed to fetch student details for ${studentId}:`, error)
               }
             }
           })
@@ -576,7 +570,6 @@ const Assessment = () => {
         setStudents([])
       }
     } catch (error) {
-      console.error('Failed to create assessments from schedule students:', error)
       setStudents([])
     }
   }
@@ -595,7 +588,6 @@ const Assessment = () => {
         highest_scores,
       })
     } catch (error) {
-      console.error('Failed to save highest scores:', error)
       showToast('Failed to save highest scores. Please try again.', 'error')
     }
   }
@@ -614,7 +606,6 @@ const Assessment = () => {
         scores: backendScores,
       })
     } catch (error) {
-      console.error('Failed to save student score:', error)
       showToast(`Failed to save score for ${studentId}. Please try again.`, 'error')
     }
   }
@@ -864,7 +855,6 @@ const Assessment = () => {
       // Prepare student rows
       const studentRows = students.map(student => {
         // const prelimScore = calculatePrelimScore(student)
-        // console.log(student);
         
         return [
           student.lastName || '',
@@ -918,7 +908,6 @@ const Assessment = () => {
       
       showToast('Assessment data exported successfully!', 'success')
     } catch (error) {
-      console.error('Failed to export to Excel:', error)
       showToast('Failed to export to Excel. Please try again.', 'error')
     }
   }

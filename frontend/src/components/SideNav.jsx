@@ -10,6 +10,8 @@ import {
   FileText,
   Calendar,
   Upload,
+  Container,
+  Server,
   X
 } from 'lucide-react'
 import { useSettings } from '../contexts/SettingsContext'
@@ -20,12 +22,16 @@ const SideNav = ({ isOpen, onClose }) => {
 
   const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/attendance', icon: ClipboardCheck, label: 'Attendance' },
-    { path: '/assessment', icon: FileText, label: 'Assessment' },
-    { path: '/schedule', icon: Calendar, label: 'Schedule' },
-    { path: '/students', icon: GraduationCap, label: 'Students' },
-    { path: '/user', icon: Table, label: 'Users' },
+    // { path: '/attendance', icon: ClipboardCheck, label: 'Attendance' },
+    // { path: '/assessment', icon: FileText, label: 'Assessment' },
+    // { path: '/schedule', icon: Calendar, label: 'Schedule' },
+    // { path: '/students', icon: GraduationCap, label: 'Students' },
+
+    { path: '/docker', icon: Container, label: 'Docker Monitor' },
+    { path: '/servers', icon: Server, label: 'Servers' },
     { path: '/file-upload', icon: Upload, label: 'File Upload' },
+    // { path: '/docker', icon: Container, label: 'Docker Monitor' },
+    { path: '/user', icon: Table, label: 'Users' },
     // { path: '/images', icon: ImageIcon, label: 'Images' },
     // { path: '/charts', icon: BarChart3, label: 'Charts' },
     { path: '/settings', icon: Settings, label: 'Settings' },

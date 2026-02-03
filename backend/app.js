@@ -9,6 +9,9 @@ const studentRoutes = require('./src/routes/studentRoutes');
 const assessmentRoutes = require('./src/routes/assessmentRoutes');
 const attendanceRoutes = require('./src/routes/attendanceRoutes');
 const fileUploadRoutes = require('./src/routes/fileUploadRoutes');
+const dockerRoutes = require('./src/routes/dockerRoutes');
+const dockerActionLogRoutes = require('./src/routes/dockerActionLogRoutes');
+const serverRoutes = require('./src/routes/serverRoutes');
 const errorHandler = require('./src/middleware/errorHandler');
 
 const app = express();
@@ -60,6 +63,12 @@ app.use('/api/assessments', assessmentRoutes);
 app.use('/api/attendance', attendanceRoutes);
 
 app.use('/api/file-uploads', fileUploadRoutes);
+
+app.use('/api/docker', dockerRoutes);
+
+app.use('/api/docker-logs', dockerActionLogRoutes);
+
+app.use('/api/servers', serverRoutes);
 
 // Serve static files from public/uploads
 app.use('/api/uploads', express.static('public/uploads'));

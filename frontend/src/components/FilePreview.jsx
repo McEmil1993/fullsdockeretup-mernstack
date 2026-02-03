@@ -98,7 +98,6 @@ const FilePreview = ({ file, apiBaseUrl }) => {
       })
       setLoading(false)
     } catch (err) {
-      console.error('Excel load error:', err)
       setError('Failed to load Excel file')
       setLoading(false)
     }

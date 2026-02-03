@@ -82,7 +82,6 @@ export const SettingsProvider = ({ children }) => {
         // API failed (not logged in or error) - use defaults
         // Don't log warning if it's a 401 (expected when not logged in)
         if (error.message && !error.message.includes('401')) {
-          console.warn('Failed to load settings from API, using defaults:', error)
         }
         currentSettings = defaultSettings
       }
@@ -90,7 +89,6 @@ export const SettingsProvider = ({ children }) => {
       setSettings(currentSettings)
       applySettingsToDocument(currentSettings)
     } catch (error) {
-      console.error('Error loading settings:', error)
       setSettings(defaultSettings)
       applySettingsToDocument(defaultSettings)
     } finally {
@@ -124,13 +122,11 @@ export const SettingsProvider = ({ children }) => {
     settingsService.updateSettings(newSettings)
       .then(() => {
         // Successfully saved to database
-        console.log('Settings saved to database:', Object.keys(newSettings))
       })
       .catch((error) => {
         // API failed - settings are still updated locally
         // Only log if it's not a 401 (not logged in)
         if (error.message && !error.message.includes('401')) {
-          console.warn('Failed to update settings on server:', error)
         }
       })
   }
@@ -150,7 +146,6 @@ export const SettingsProvider = ({ children }) => {
       }
     } catch (error) {
       // API failed - settings are still reset locally
-      console.warn('Failed to reset settings on server (may not be logged in):', error)
     }
   }
 

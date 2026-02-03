@@ -179,7 +179,6 @@ const Profile = () => {
         })
       }
     } catch (error) {
-      console.error('Failed to save profile:', error)
       setToast({
         isOpen: true,
         message: error.message || 'An error occurred. Please try again.',
@@ -290,7 +289,6 @@ const Profile = () => {
         })
       }
     } catch (error) {
-      console.error('Failed to change password:', error)
       setToast({
         isOpen: true,
         message: error.message || 'An error occurred. Please try again.',
@@ -355,7 +353,6 @@ const Profile = () => {
         setShowResetConfirm(false)
       }
     } catch (error) {
-      console.error('Failed to reset password:', error)
       setToast({
         isOpen: true,
         message: error.message || 'Failed to reset password. Please try again.',

@@ -135,7 +135,6 @@ const Attendance = () => {
 
     setSchedules(mappedSchedules)
   } catch (error) {
-    console.error('Failed to load schedules:', error)
     showToast('Failed to load schedules. Please try again.', 'error')
   }
 }
@@ -192,7 +191,6 @@ const Attendance = () => {
               studentDetailsMap.set(studentId, studentResponse.student)
             }
           } catch (error) {
-            console.warn(`Failed to fetch student details for ${studentId}:`, error)
           }
         }
       })
@@ -226,7 +224,6 @@ const Attendance = () => {
 
       setStudents(finalStudents)
     } catch (error) {
-      console.error('Failed to load attendance:', error)
       showToast('Failed to load attendance. Please try again.', 'error')
       setStudents([])
     } finally {
@@ -248,7 +245,6 @@ const Attendance = () => {
         term: termToBackend(termFilter),
       })
     } catch (error) {
-      console.error('Failed to save attendance:', error)
       showToast(`Failed to save attendance for ${studentId}. Please try again.`, 'error')
     }
   }

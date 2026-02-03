@@ -47,7 +47,6 @@ const Schedule = () => {
       setAllData(mappedSchedules)
       setTotalCount(response.total_count || response.total || 0)
     } catch (error) {
-      console.error('Failed to load schedules:', error)
       showToast('Failed to load schedules. Please try again.', 'error')
       setAllData([])
       setTotalCount(0)
@@ -68,7 +67,6 @@ const Schedule = () => {
       }))
       setStudents(mappedStudents)
     } catch (error) {
-      console.error('Failed to load students:', error)
       setStudents([])
     }
   }
@@ -351,7 +349,6 @@ const Schedule = () => {
           createdStudents++
         } catch (error) {
           // Skip if duplicate or other error
-          console.warn(`Failed to create student ${student.student_id}:`, error.message)
         }
       }
 
@@ -392,7 +389,6 @@ const Schedule = () => {
         }
       }
     } catch (error) {
-      console.error('Failed to save imported data:', error)
       showToast(error.response?.data?.message || 'Failed to save imported data. Please try again.', 'error')
     } finally {
       setSaving(false)
@@ -847,7 +843,6 @@ const Schedule = () => {
             setImportProgress({ show: false, percentage: 0, message: '' })
           }, 1500)
         } catch (error) {
-          console.error('Error reading Excel file:', error)
           showToast('Failed to read Excel file. Please check the file format.', 'error')
         }
       }
@@ -877,7 +872,6 @@ const Schedule = () => {
         })
       }
     } catch (error) {
-      console.warn('Failed to fetch schedule data:', error)
       // Use existing item data as fallback
     setFormData({
       subject: item.subject || '',
@@ -981,7 +975,6 @@ const Schedule = () => {
       selectedStudents: [] 
     })
     } catch (error) {
-      console.error('Failed to save schedule:', error)
       showToast(error.response?.data?.message || 'Failed to save schedule. Please try again.', 'error')
     } finally {
       setSaving(false)
@@ -1007,7 +1000,6 @@ const Schedule = () => {
         await loadSchedules(currentPage, pageSize)
       showToast(`Schedule ${confirmDialog.newStatus}`, 'success')
       } catch (error) {
-        console.error('Failed to update schedule status:', error)
         showToast(error.response?.data?.message || 'Failed to update schedule status. Please try again.', 'error')
       }
       setConfirmDialog({ isOpen: false, item: null, newStatus: null })

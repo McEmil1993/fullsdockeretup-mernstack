@@ -13,11 +13,15 @@ RUN npm ci --only=production && npm cache clean --force
 # Production stage
 FROM node:24.13-alpine
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install dumb-init for proper signal handling and Docker CLI for monitoring
+RUN apk add --no-cache dumb-init docker-cli
 
 # Create app user for security
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+
+# Add nodejs user to docker group for Docker socket access
+# Get the GID of the docker socket from host and create matching group
+RUN addgroup -g 989 -S docker && adduser nodejs docker
 
 # Set working directory
 WORKDIR /app

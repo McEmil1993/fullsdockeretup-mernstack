@@ -1,8 +1,8 @@
 node_modules/
-logs/
+dist/
 .env
 .env*
 *.log
 .DS_Store
-public/upload
-public/uploads
+*.md
+*.sh

@@ -57,7 +57,6 @@ const FileUploadCard = ({
     if (validFiles.length !== selectedFiles.length) {
       const maxSizeText = maxSize >= 1024 ? `${maxSize / 1024}GB` : `${maxSize}MB`
       // Use a toast/notification instead of alert - will be handled by parent component
-      console.warn(`Some files exceed the ${maxSizeText} size limit and were not added.`)
     }
 
     if (onFileSelect) {

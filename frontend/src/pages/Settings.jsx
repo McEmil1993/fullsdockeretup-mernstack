@@ -124,7 +124,6 @@ const Settings = () => {
       await resetSettings()
       // localSettings will be updated via useEffect when settings context updates
     } catch (error) {
-      console.error('Failed to reset settings:', error)
     }
   }
 
