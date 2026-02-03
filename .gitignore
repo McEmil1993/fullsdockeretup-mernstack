@@ -6,3 +6,9 @@ dist/
 .DS_Store
 *.md
 *.sh
+# Environment files with secrets
+.env
+.env.local
+.env.production
+.env.development
+*.env
