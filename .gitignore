@@ -12,3 +12,4 @@ dist/
 .env.production
 .env.development
 *.env
+ecosystem.config.js
