@@ -10,6 +10,9 @@ const dockerActionLogRoutes = require('./src/routes/dockerActionLogRoutes');
 const serverRoutes = require('./src/routes/serverRoutes');
 const aiRoutes = require('./src/routes/aiRoutes');
 const conversationRoutes = require('./src/routes/conversationRoutes');
+const userPreferenceRoutes = require('./src/routes/userPreferenceRoutes');
+const markdownDocumentRoutes = require('./src/routes/markdownDocumentRoutes');
+const dockerNotificationRoutes = require('./src/routes/dockerNotificationRoutes');
 const errorHandler = require('./src/middleware/errorHandler');
 
 const app = express();
@@ -23,13 +26,41 @@ const allowedOrigins = (process.env.CLIENT_ORIGIN || process.env.FRONTEND_URL ||
   .map(s => s.trim())
   .filter(Boolean);
 
+// Log CORS configuration for debugging
+console.log('🔒 CORS Configuration:');
+console.log('   Allowed Origins:', allowedOrigins.length > 0 ? allowedOrigins : 'ALL (Development mode)');
+console.log('   Credentials:', true);
+
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow non-browser tools (no Origin header), and allow configured frontend origins
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.length === 0) return callback(null, true);
-      return callback(null, allowedOrigins.includes(origin));
+      // Log incoming requests for debugging
+      if (origin) {
+        console.log(`📡 CORS Request from: ${origin}`);
+      }
+      
+      // Allow non-browser tools (no Origin header)
+      if (!origin) {
+        console.log('✅ Allowing request (no origin header)');
+        return callback(null, true);
+      }
+      
+      // In development or if no origins configured, allow all
+      if (allowedOrigins.length === 0) {
+        console.log('✅ Allowing request (no restrictions configured)');
+        return callback(null, true);
+      }
+      
+      // Check if origin is in allowed list
+      if (allowedOrigins.includes(origin)) {
+        console.log(`✅ Allowing origin: ${origin}`);
+        return callback(null, true);
+      }
+      
+      // Reject if not in allowed list
+      console.log(`❌ Blocking origin: ${origin}`);
+      console.log(`   Allowed origins: ${allowedOrigins.join(', ')}`);
+      return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
   })
@@ -63,6 +94,12 @@ app.use('/api/servers', serverRoutes);
 app.use('/api/ai', aiRoutes);
 
 app.use('/api/conversations', conversationRoutes);
+
+app.use('/api/preferences', userPreferenceRoutes);
+
+app.use('/api/documents', markdownDocumentRoutes);
+
+app.use('/api/notifications', dockerNotificationRoutes);
 
 // Serve static files from public/uploads
 app.use('/api/uploads', express.static('public/uploads'));

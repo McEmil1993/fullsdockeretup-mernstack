@@ -1,0 +1,28 @@
+# Dockerfile for NixOS
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+# Install OpenSSH and basic tools using nix-env
+RUN nix-channel --update && \
+    nix-env -iA nixpkgs.openssh nixpkgs.sudo nixpkgs.curl nixpkgs.nano nixpkgs.vim nixpkgs.iputils
+
+# Generate SSH host keys
+RUN ssh-keygen -A
+
+# Set root password
+RUN echo 'root:admin123' | chpasswd
+
+# Enable root login and password auth
+RUN mkdir -p /etc/ssh && \
+    (sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config || \
+    sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config || \
+    sed -i 's/#PermitRootLogin no/PermitRootLogin yes/' /etc/ssh/sshd_config || \
+    echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config)
+
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config || \
+    sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config || \
+    echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config
+
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd", "-D"]

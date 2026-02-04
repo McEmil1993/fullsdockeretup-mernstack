@@ -148,3 +148,43 @@ export async function getContainerBashHistory(containerId) {
   const { data } = await get(`/api/docker/containers/${containerId}/bash-history`)
   return data
 }
+
+/**
+ * Get all used ports
+ */
+export async function getUsedPorts() {
+  const { data } = await get('/api/docker/ports/used')
+  return data
+}
+
+/**
+ * Check if container name exists
+ */
+export async function checkContainerName(name) {
+  const { data } = await get(`/api/docker/containers/check-name/${name}`)
+  return data
+}
+
+/**
+ * Check if ports are available
+ */
+export async function checkPortsAvailable(ports) {
+  const response = await post('/api/docker/ports/check-available', { ports })
+  return response.data
+}
+
+/**
+ * Create custom container
+ */
+export async function createCustomContainer(config) {
+  const response = await post('/api/docker/containers/create', config)
+  return response.data
+}
+
+/**
+ * Delete container completely with volumes
+ */
+export async function deleteContainerCompletely(containerId) {
+  const response = await del(`/api/docker/containers/${containerId}/complete`)
+  return response.data
+}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { io } from 'socket.io-client'
+import * as notificationService from '../services/notifications'
 
 const SOCKET_URL = import.meta.env.VITE_WS_URL || 'http://localhost:3060'
 
@@ -11,30 +12,37 @@ const SOCKET_URL = import.meta.env.VITE_WS_URL || 'http://localhost:3060'
 export function useWebSocket(onDockerEvent = null) {
   const socketRef = useRef(null)
   const [connected, setConnected] = useState(false)
-  const [notifications, setNotifications] = useState(() => {
-    // Load notifications from localStorage on init
-    try {
-      const saved = localStorage.getItem('dockerNotifications')
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        // Keep only notifications from last 24 hours
-        const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000)
-        return parsed.filter(n => new Date(n.timestamp).getTime() > oneDayAgo).slice(0, 10)
-      }
-    } catch (error) {
-      console.error('Failed to load notifications from localStorage:', error)
-    }
-    return []
-  })
+  const [notifications, setNotifications] = useState([])
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(true)
 
-  // Save notifications to localStorage whenever they change
+  // Load notifications from database on init
   useEffect(() => {
-    try {
-      localStorage.setItem('dockerNotifications', JSON.stringify(notifications))
-    } catch (error) {
-      console.error('Failed to save notifications to localStorage:', error)
+    const loadNotifications = async () => {
+      try {
+        const response = await notificationService.getNotifications({ limit: 10 })
+        if (response.data) {
+          setNotifications(response.data)
+        }
+      } catch (error) {
+        // Silently fall back to localStorage (API not available)
+        try {
+          const saved = localStorage.getItem('dockerNotifications')
+          if (saved) {
+            const parsed = JSON.parse(saved)
+            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000)
+            const filtered = parsed.filter(n => new Date(n.timestamp).getTime() > oneDayAgo).slice(0, 10)
+            setNotifications(filtered)
+          }
+        } catch (localError) {
+          console.error('Failed to load notifications from localStorage:', localError)
+        }
+      } finally {
+        setIsLoadingNotifications(false)
+      }
     }
-  }, [notifications])
+    
+    loadNotifications()
+  }, [])
 
   useEffect(() => {
     // Initialize socket connection
@@ -55,17 +63,17 @@ export function useWebSocket(onDockerEvent = null) {
     })
 
     socketRef.current.on('connected', (data) => {
-      console.log('🔌 Connected to WebSocket service:', data)
+      // console.log(' Connected to WebSocket service:', data)
+      console.log(' Connected to WebSocket service:')
     })
 
     // Listen for Docker events (start, stop, restart, die, kill, pause, etc.)
-    socketRef.current.on('dockerEvent', (event) => {
-      console.log('🐳 Docker event received:', event)
+    socketRef.current.on('dockerEvent', async (event) => {
+      // console.log('🐳 Docker event received:', event)
       
-      // Add notification to the list
       const notification = {
         id: Date.now() + Math.random(),
-        type: event.type, // 'critical', 'warning', 'info'
+        type: event.type,
         category: event.category,
         action: event.action,
         message: event.message,
@@ -76,7 +84,25 @@ export function useWebSocket(onDockerEvent = null) {
         timestamp: event.timestamp
       }
       
-      setNotifications(prev => [notification, ...prev].slice(0, 10)) // Keep last 10
+      // Try to save to database
+      try {
+        const response = await notificationService.createNotification({
+          message: event.message,
+          type: event.type || 'info',
+          containerId: event.containerId,
+          containerName: event.containerName
+        })
+        // Use server-generated ID if available
+        notification.id = response.data?._id || notification.id
+      } catch (error) {
+        // Silently fail - save to localStorage as fallback
+        const saved = localStorage.getItem('dockerNotifications') || '[]'
+        const notifications = JSON.parse(saved)
+        notifications.unshift(notification)
+        localStorage.setItem('dockerNotifications', JSON.stringify(notifications.slice(0, 10)))
+      }
+      
+      setNotifications(prev => [notification, ...prev].slice(0, 10))
       
       // Call custom callback if provided
       if (onDockerEvent) {
@@ -85,8 +111,8 @@ export function useWebSocket(onDockerEvent = null) {
     })
 
     // Listen for Docker alerts (CPU/Memory warnings)
-    socketRef.current.on('dockerAlert', (alert) => {
-      console.log('⚠️ Docker alert received:', alert)
+    socketRef.current.on('dockerAlert', async (alert) => {
+      // console.log('⚠️ Docker alert received:', alert)
       
       const notification = {
         id: Date.now() + Math.random(),
@@ -99,6 +125,23 @@ export function useWebSocket(onDockerEvent = null) {
         containerId: alert.containerId,
         containerName: alert.containerName,
         timestamp: alert.timestamp
+      }
+      
+      // Try to save to database
+      try {
+        const response = await notificationService.createNotification({
+          message: alert.message,
+          type: alert.type || 'warning',
+          containerId: alert.containerId,
+          containerName: alert.containerName
+        })
+        notification.id = response.data?._id || notification.id
+      } catch (error) {
+        // Silently fail - save to localStorage as fallback
+        const saved = localStorage.getItem('dockerNotifications') || '[]'
+        const notifications = JSON.parse(saved)
+        notifications.unshift(notification)
+        localStorage.setItem('dockerNotifications', JSON.stringify(notifications.slice(0, 10)))
       }
       
       setNotifications(prev => [notification, ...prev].slice(0, 10))
@@ -146,3 +189,5 @@ export function useWebSocket(onDockerEvent = null) {
     clearNotifications
   }
 }
+
+export default useWebSocket

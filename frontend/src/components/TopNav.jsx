@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useSettings } from '../contexts/SettingsContext'
 import { useWebSocket } from '../hooks/useWebSocket'
 import Toast from './Toast'
+import * as preferenceService from '../services/preferences'
 
 const TopNav = ({ onMenuClick }) => {
   const { user, logout } = useAuth()
@@ -148,17 +149,34 @@ const TopNav = ({ onMenuClick }) => {
   }
 
   // Toggle sound
-  const toggleSound = () => {
-    setSoundEnabled(!soundEnabled)
-    localStorage.setItem('notificationSoundEnabled', (!soundEnabled).toString())
+  const toggleSound = async () => {
+    const newValue = !soundEnabled
+    setSoundEnabled(newValue)
+    // Try API, fall back to localStorage
+    try {
+      await preferenceService.updatePreference('notificationSoundEnabled', newValue)
+    } catch (error) {
+      localStorage.setItem('notificationSoundEnabled', newValue.toString())
+    }
   }
 
-  // Load sound preference from localStorage
+  // Load sound preference from database
   useEffect(() => {
-    const savedSoundPreference = localStorage.getItem('notificationSoundEnabled')
-    if (savedSoundPreference !== null) {
-      setSoundEnabled(savedSoundPreference === 'true')
+    const loadSoundPreference = async () => {
+      try {
+        const response = await preferenceService.getPreferences()
+        if (response.data && response.data.notificationSoundEnabled !== undefined) {
+          setSoundEnabled(response.data.notificationSoundEnabled)
+        }
+      } catch (error) {
+        // Silently fall back to localStorage
+        const savedSoundPreference = localStorage.getItem('notificationSoundEnabled')
+        if (savedSoundPreference !== null) {
+          setSoundEnabled(savedSoundPreference === 'true')
+        }
+      }
     }
+    loadSoundPreference()
   }, [])
 
   // Show toast notification

@@ -98,3 +98,27 @@ body.menu-open {
 .animate-slide-out-right {
   animation: slideOutRight 0.3s ease-in;
 }
+
+/* React-Split Gutter Styles */
+.gutter {
+  background-color: #e5e7eb;
+  background-repeat: no-repeat;
+  background-position: 50%;
+}
+
+.gutter.gutter-horizontal {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+  cursor: col-resize;
+}
+
+.dark .gutter {
+  background-color: #374151;
+}
+
+.gutter:hover {
+  background-color: #3b82f6;
+}
+
+.dark .gutter:hover {
+  background-color: #2563eb;
+}

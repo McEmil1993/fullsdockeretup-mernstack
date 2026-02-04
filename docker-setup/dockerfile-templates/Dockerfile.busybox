@@ -1,0 +1,29 @@
+# Dockerfile for BusyBox and minimal systems
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+# Note: BusyBox has very limited package management
+# This is a minimal setup that may require manual configuration
+
+# Try to install dropbear (lightweight SSH) if available
+# Otherwise, the container will be accessible via docker exec only
+RUN if command -v apk >/dev/null 2>&1; then \
+        apk add --no-cache dropbear; \
+    elif command -v apt-get >/dev/null 2>&1; then \
+        apt-get update && apt-get install -y dropbear; \
+    else \
+        echo "No package manager found. SSH not available."; \
+    fi
+
+# Set root password
+RUN echo 'root:admin123' | chpasswd 2>/dev/null || echo "Note: chpasswd may not be available"
+
+EXPOSE 22
+
+# Try to start dropbear or just keep container alive
+CMD if command -v dropbear >/dev/null 2>&1; then \
+        dropbear -FEmwg -p 22; \
+    else \
+        echo "SSH not available. Use 'docker exec' to access this container."; \
+        tail -f /dev/null; \
+    fi

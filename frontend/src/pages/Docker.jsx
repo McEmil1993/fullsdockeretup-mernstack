@@ -27,7 +27,10 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  History
+  History,
+  Plus,
+  Square,
+  CheckSquare
 } from 'lucide-react'
 import { io } from 'socket.io-client'
 import * as dockerService from '../services/docker'
@@ -38,6 +41,10 @@ import Modal from '../components/Modal'
 import NotificationContainer from '../components/NotificationContainer'
 import SkeletonWidget from '../components/SkeletonWidget'
 import SkeletonTable from '../components/SkeletonTable'
+import CreateContainerForm from '../components/docker/CreateContainerForm'
+import DockerTerminal from '../components/DockerTerminal'
+import useWebSocket from '../hooks/useWebSocket'
+import PasswordPrompt from '../components/PasswordPrompt'
 
 const SOCKET_URL = import.meta.env.VITE_WS_URL || 'http://localhost:3060'
 
@@ -65,6 +72,20 @@ export default function Docker() {
   const [cpuSortOrder, setCpuSortOrder] = useState(null) // null, 'asc', 'desc'
   const [memorySortOrder, setMemorySortOrder] = useState(null) // null, 'asc', 'desc'
   const [containerActionLogs, setContainerActionLogs] = useState({}) // Store action logs per container
+  const [showCreateForm, setShowCreateForm] = useState(false) // Show create container form
+  
+  // Multi-select state
+  const [selectionMode, setSelectionMode] = useState(false) // Enable selection mode on long press
+  const [selectedContainers, setSelectedContainers] = useState([]) // Array of selected container IDs
+  const longPressTimer = useRef(null)
+  const longPressDelay = 500 // 500ms for long press
+  
+  // Terminal state
+  const [terminalOpen, setTerminalOpen] = useState(false)
+  const [terminalContainer, setTerminalContainer] = useState(null)
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false)
+  const [pendingTerminal, setPendingTerminal] = useState(null)
+  const { socket } = useWebSocket()
 
   // Load all data
   const loadData = async () => {
@@ -80,7 +101,7 @@ export default function Docker() {
       setImages(imagesRes.data || [])
       
       // Group logs by container ID (both short and full)
-      console.log(logsRes);
+      // console.log(logsRes);
       
       const logsData = logsRes || []
       const logsByContainer = {}
@@ -281,6 +302,262 @@ export default function Docker() {
         } catch (error) {
           showToast(error.message || 'Failed to recreate container', 'error')
         }
+      }
+    )
+  }
+
+  // Handle complete deletion of container with volumes
+  const handleDeleteContainerCompletely = (containerId, containerName) => {
+    showConfirm(
+      '⚠️ Completely Delete Container',
+      `Are you sure you want to COMPLETELY DELETE "${containerName}"?\n\nThis will permanently remove:\n• Container\n• All volumes and data\n• Docker image\n• Directory files\n• docker-compose.yml entry\n• Server record from database\n\n⚠️ THIS CANNOT BE UNDONE!`,
+      async () => {
+        try {
+          await dockerService.deleteContainerCompletely(containerId)
+          showToast(`Container ${containerName} and all data deleted successfully`, 'success')
+          loadData()
+        } catch (error) {
+          showToast(error.message || 'Failed to delete container completely', 'error')
+        }
+      }
+    )
+  }
+
+  // Handle open terminal
+  const handleOpenTerminal = (container) => {
+    if (!socket || !socket.connected) {
+      showToast('WebSocket not connected. Please refresh the page.', 'error')
+      return
+    }
+    
+    // Try to extract SSH port from container ports
+    // Format: "0.0.0.0:2011->22/tcp, 0.0.0.0:5833->3000/tcp"
+    let sshPort = null
+    
+    if (container.ports) {
+      const portMatch = container.ports.match(/0\.0\.0\.0:(\d+)->22\/tcp/)
+      if (portMatch) {
+        sshPort = parseInt(portMatch[1])
+      }
+    }
+    
+    // Always show prompt to choose connection method
+    setPendingTerminal({
+      id: container.id,
+      name: container.name,
+      sshPort: sshPort,
+      sshConfig: {
+        host: 'localhost', // Use localhost for direct connection
+        port: sshPort || 22,
+        username: 'root',
+        password: ''
+      }
+    })
+    setShowPasswordPrompt(true)
+  }
+
+  // Handle password submit
+  const handlePasswordSubmit = (password, useCloudflared = false, customHost = '', username = 'root') => {
+    if (pendingTerminal) {
+      // If not using cloudflared
+      if (!useCloudflared) {
+        // If SSH port is available, use direct SSH to localhost
+        if (pendingTerminal.sshPort) {
+          setTerminalContainer({
+            id: pendingTerminal.id,
+            name: pendingTerminal.name,
+            sshConfig: {
+              host: 'localhost',
+              port: pendingTerminal.sshPort,
+              username: username,
+              password: password,
+              useCloudflared: false
+            }
+          })
+        } else {
+          // No SSH port, use docker exec
+          setTerminalContainer({
+            id: pendingTerminal.id,
+            name: pendingTerminal.name,
+            sshConfig: null
+          })
+        }
+      } else {
+        // Use SSH with cloudflared
+        pendingTerminal.sshConfig.password = password
+        pendingTerminal.sshConfig.useCloudflared = useCloudflared
+        pendingTerminal.sshConfig.username = username
+        
+        // Use custom host if provided
+        if (customHost && customHost.trim()) {
+          pendingTerminal.sshConfig.host = customHost.trim()
+        }
+        
+        setTerminalContainer(pendingTerminal)
+      }
+      
+      setTerminalOpen(true)
+    }
+    setShowPasswordPrompt(false)
+    setPendingTerminal(null)
+  }
+
+  // Handle password cancel
+  const handlePasswordCancel = () => {
+    setShowPasswordPrompt(false)
+    setPendingTerminal(null)
+  }
+
+  // Handle close terminal
+  const handleCloseTerminal = () => {
+    setTerminalOpen(false)
+    setTerminalContainer(null)
+  }
+
+  // Long press handlers for multi-select
+  const handleMouseDown = (containerId) => {
+    longPressTimer.current = setTimeout(() => {
+      setSelectionMode(true)
+      setSelectedContainers([containerId])
+    }, longPressDelay)
+  }
+
+  const handleMouseUp = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+    }
+  }
+
+  const handleMouseLeave = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+    }
+  }
+
+  // Toggle container selection
+  const toggleContainerSelection = (containerId) => {
+    if (!selectionMode) return
+    
+    setSelectedContainers(prev => {
+      if (prev.includes(containerId)) {
+        return prev.filter(id => id !== containerId)
+      } else {
+        return [...prev, containerId]
+      }
+    })
+  }
+
+  // Select all containers
+  const handleSelectAll = () => {
+    if (selectedContainers.length === filteredContainers.length) {
+      setSelectedContainers([])
+    } else {
+      setSelectedContainers(filteredContainers.map(c => c.id))
+    }
+  }
+
+  // Exit selection mode
+  const exitSelectionMode = () => {
+    setSelectionMode(false)
+    setSelectedContainers([])
+  }
+
+  // Bulk stop containers
+  const handleBulkStop = async () => {
+    showConfirm(
+      'Stop Selected Containers',
+      `Are you sure you want to stop ${selectedContainers.length} selected container(s)?`,
+      async () => {
+        let successCount = 0
+        let errorCount = 0
+        
+        for (const containerId of selectedContainers) {
+          try {
+            await dockerService.stopContainer(containerId)
+            successCount++
+          } catch (error) {
+            errorCount++
+          }
+        }
+        
+        showToast(`Stopped ${successCount} container(s)${errorCount > 0 ? `, ${errorCount} failed` : ''}`, errorCount > 0 ? 'warning' : 'success')
+        exitSelectionMode()
+        loadData()
+      }
+    )
+  }
+
+  // Bulk restart containers
+  const handleBulkRestart = async () => {
+    showConfirm(
+      'Restart Selected Containers',
+      `Are you sure you want to restart ${selectedContainers.length} selected container(s)?`,
+      async () => {
+        let successCount = 0
+        let errorCount = 0
+        
+        for (const containerId of selectedContainers) {
+          try {
+            await dockerService.restartContainer(containerId)
+            successCount++
+          } catch (error) {
+            errorCount++
+          }
+        }
+        
+        showToast(`Restarted ${successCount} container(s)${errorCount > 0 ? `, ${errorCount} failed` : ''}`, errorCount > 0 ? 'warning' : 'success')
+        exitSelectionMode()
+        loadData()
+      }
+    )
+  }
+
+  // Bulk recreate containers
+  const handleBulkRecreate = async () => {
+    showConfirm(
+      'Recreate Selected Containers',
+      `Are you sure you want to recreate ${selectedContainers.length} selected container(s)? This will stop, remove, and rebuild them.`,
+      async () => {
+        let successCount = 0
+        let errorCount = 0
+        
+        for (const containerId of selectedContainers) {
+          try {
+            await dockerService.recreateContainer(containerId)
+            successCount++
+          } catch (error) {
+            errorCount++
+          }
+        }
+        
+        showToast(`Recreated ${successCount} container(s)${errorCount > 0 ? `, ${errorCount} failed` : ''}`, errorCount > 0 ? 'warning' : 'success')
+        exitSelectionMode()
+        setTimeout(() => loadData(), 2000)
+      }
+    )
+  }
+
+  // Bulk delete containers completely
+  const handleBulkDelete = async () => {
+    showConfirm(
+      '⚠️ Completely Delete Selected Containers',
+      `Are you sure you want to COMPLETELY DELETE ${selectedContainers.length} selected container(s)?\n\nThis will permanently remove:\n• Containers\n• All volumes and data\n• Docker images\n• Directory files\n• docker-compose.yml entries\n• Server records from database\n\n⚠️ THIS CANNOT BE UNDONE!`,
+      async () => {
+        let successCount = 0
+        let errorCount = 0
+        
+        for (const containerId of selectedContainers) {
+          try {
+            await dockerService.deleteContainerCompletely(containerId)
+            successCount++
+          } catch (error) {
+            errorCount++
+          }
+        }
+        
+        showToast(`Deleted ${successCount} container(s)${errorCount > 0 ? `, ${errorCount} failed` : ''}`, errorCount > 0 ? 'warning' : 'success')
+        exitSelectionMode()
+        loadData()
       }
     )
   }
@@ -751,18 +1028,88 @@ export default function Docker() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   All Containers ({filteredContainers.length})
+                  {selectionMode && (
+                    <span className="ml-3 text-sm font-normal text-blue-600 dark:text-blue-400">
+                      ({selectedContainers.length} selected)
+                    </span>
+                  )}
                 </h2>
                 
-                {/* Search Bar */}
-                <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search containers..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                  {/* Search Bar */}
+                  {!selectionMode && (
+                    <div className="relative w-full sm:w-64">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search containers..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Create Container Button */}
+                  {!selectionMode && (
+                    <button
+                      onClick={() => setShowCreateForm(true)}
+                      className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium"
+                    >
+                      <Plus className="w-5 h-5" />
+                      <span className="whitespace-nowrap">Create Container</span>
+                    </button>
+                  )}
+                  
+                  {/* Bulk Action Buttons */}
+                  {selectionMode && (
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={handleBulkStop}
+                        disabled={selectedContainers.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Stop Selected"
+                      >
+                        <StopCircle className="w-4 h-4" />
+                        Stop ({selectedContainers.length})
+                      </button>
+                      <button
+                        onClick={handleBulkRestart}
+                        disabled={selectedContainers.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Restart Selected"
+                      >
+                        <RotateCw className="w-4 h-4" />
+                        Restart ({selectedContainers.length})
+                      </button>
+                      <button
+                        onClick={handleBulkRecreate}
+                        disabled={selectedContainers.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Recreate Selected"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        Recreate ({selectedContainers.length})
+                      </button>
+                      <button
+                        onClick={handleBulkDelete}
+                        disabled={selectedContainers.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-800 hover:bg-red-900 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Delete Selected Completely"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete ({selectedContainers.length})
+                      </button>
+                      <button
+                        onClick={exitSelectionMode}
+                        className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                        title="Cancel Selection"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        Cancel
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -770,6 +1117,23 @@ export default function Docker() {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-900">
                     <tr>
+                      {/* Checkbox column for selection mode */}
+                      {selectionMode && (
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                          <button
+                            onClick={handleSelectAll}
+                            className="flex items-center gap-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            title={selectedContainers.length === filteredContainers.length ? "Deselect All" : "Select All"}
+                          >
+                            {selectedContainers.length === filteredContainers.length ? (
+                              <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            ) : (
+                              <Square className="w-5 h-5" />
+                            )}
+                          </button>
+                        </th>
+                      )}
+                      
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Name</th>
                   
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
@@ -805,8 +1169,41 @@ export default function Docker() {
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {sortedContainers.map((container) => {
                       const containerStats = getContainerStats(container.id)
+                      const isSelected = selectedContainers.includes(container.id)
+                      
                       return (
-                        <tr key={container.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <tr 
+                          key={container.id} 
+                          className={`transition-colors ${
+                            isSelected 
+                              ? 'bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30' 
+                              : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                          }`}
+                          onMouseDown={() => !selectionMode && handleMouseDown(container.id)}
+                          onMouseUp={handleMouseUp}
+                          onMouseLeave={handleMouseLeave}
+                          onClick={() => selectionMode && toggleContainerSelection(container.id)}
+                          style={{ cursor: selectionMode ? 'pointer' : 'default' }}
+                        >
+                          {/* Checkbox column */}
+                          {selectionMode && (
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  toggleContainerSelection(container.id)
+                                }}
+                                className="flex items-center"
+                              >
+                                {isSelected ? (
+                                  <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                ) : (
+                                  <Square className="w-5 h-5 text-gray-400" />
+                                )}
+                              </button>
+                            </td>
+                          )}
+                          
                           <td className="px-4 py-3 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900 dark:text-white">{container.name}</div>
                             <div className="text-xs text-gray-500 dark:text-gray-400">{container.id.substring(0, 12)}</div>
@@ -914,11 +1311,26 @@ export default function Docker() {
                                 <Terminal className="w-4 h-4" />
                               </button>
                               <button
+                                onClick={() => handleOpenTerminal(container)}
+                                className="p-1.5 text-cyan-600 hover:text-cyan-800 dark:text-cyan-400 dark:hover:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded transition-colors"
+                                title="Open Terminal (SSH or Docker Exec)"
+                                disabled={container.state.toLowerCase() !== 'running'}
+                              >
+                                <Terminal className="w-4 h-4" />
+                              </button>
+                              <button
                                 onClick={() => handleRecreateContainer(container.id, container.name)}
                                 className="p-1.5 text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors"
                                 title="Recreate Container"
                               >
                                 <RefreshCw className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteContainerCompletely(container.id, container.name)}
+                                className="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                title="Delete Completely (with volumes)"
+                              >
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
                           </td>
@@ -1325,13 +1737,7 @@ export default function Docker() {
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => handleViewLogs(detailsModal.container.id, detailsModal.container.name)}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm flex items-center gap-2"
-              >
-                <Terminal className="w-4 h-4" />
-                View Logs
-              </button>
+              
               <button
                 onClick={() => setDetailsModal({ show: false, container: null, containerStats: null })}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
@@ -1341,6 +1747,41 @@ export default function Docker() {
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Create Container Form Modal */}
+      {showCreateForm && (
+        <CreateContainerForm
+          onClose={() => setShowCreateForm(false)}
+          onSuccess={(message) => {
+            showToast(message, 'success')
+            loadData() // Reload containers list
+          }}
+        />
+      )}
+
+      {/* Password Prompt for SSH */}
+      {showPasswordPrompt && pendingTerminal && (
+        <PasswordPrompt
+          onSubmit={handlePasswordSubmit}
+          onCancel={handlePasswordCancel}
+          title="Terminal Connection"
+          message="Choose connection method"
+          showCloudflaredOption={true}
+          defaultHost={pendingTerminal.sshConfig?.host || ''}
+          sshPort={pendingTerminal.sshPort}
+        />
+      )}
+
+      {/* Docker Terminal Modal */}
+      {terminalOpen && terminalContainer && socket && (
+        <DockerTerminal
+          containerId={terminalContainer.id}
+          containerName={terminalContainer.name}
+          onClose={handleCloseTerminal}
+          socket={socket}
+          sshConfig={terminalContainer.sshConfig}
+        />
       )}
     </div>
   )

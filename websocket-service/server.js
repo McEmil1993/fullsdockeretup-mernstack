@@ -2,6 +2,8 @@ require('dotenv').config();
 const http = require('http');
 const { Server } = require('socket.io');
 const DockerMonitor = require('./src/dockerMonitor');
+const { Client: SSHClient } = require('ssh2');
+const { spawn } = require('child_process');
 
 const PORT = process.env.PORT || 3001;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
@@ -148,6 +150,204 @@ io.on('connection', (socket) => {
   });
 
   /**
+   * Docker Terminal - SSH Connection (with cloudflared proxy support)
+   */
+  let sshConnection = null;
+  let sshStream = null;
+  
+  socket.on('terminal:ssh', (data) => {
+    const { host, port, username, password, useCloudflared } = data;
+    
+    console.log(`🔐 Starting SSH connection for ${socket.id}: ${username}@${host}${useCloudflared ? ' (via cloudflared)' : `:${port}`}`);
+    
+    // If using cloudflared, spawn SSH with ProxyCommand
+    if (useCloudflared) {
+      const sshArgs = [
+        '-o', `ProxyCommand=cloudflared access ssh --hostname %h`,
+        '-o', 'StrictHostKeyChecking=no',
+        '-o', 'UserKnownHostsFile=/dev/null',
+        '-tt',
+        `${username}@${host}`
+      ];
+      
+      console.log(`Executing: ssh ${sshArgs.join(' ')}`);
+      
+      const sshProcess = spawn('ssh', sshArgs, {
+        env: { ...process.env, TERM: 'xterm-256color' }
+      });
+      
+      // Send password when prompted
+      let passwordSent = false;
+      
+      sshProcess.stdout.on('data', (data) => {
+        const output = data.toString();
+        socket.emit('terminal:data', output);
+        
+        // Auto-send password when prompted
+        if (!passwordSent && (output.includes('password:') || output.includes('Password:'))) {
+          sshProcess.stdin.write(password + '\n');
+          passwordSent = true;
+        }
+      });
+      
+      sshProcess.stderr.on('data', (data) => {
+        socket.emit('terminal:data', data.toString());
+      });
+      
+      sshProcess.on('exit', (code) => {
+        console.log(`🖥️ SSH process exited with code ${code} for ${socket.id}`);
+        socket.emit('terminal:exit', { code });
+      });
+      
+      sshProcess.on('error', (error) => {
+        console.error(`❌ SSH process error for ${socket.id}:`, error);
+        socket.emit('terminal:error', { message: error.message });
+      });
+      
+      // Store process for cleanup
+      dockerProcess = sshProcess;
+      
+      socket.emit('terminal:connected');
+      return;
+    }
+    
+    // Standard SSH connection (no cloudflared)
+    sshConnection = new SSHClient();
+    
+    sshConnection.on('ready', () => {
+      console.log(`✓ SSH connection ready for ${socket.id}`);
+      
+      sshConnection.shell({ term: 'xterm-256color' }, (err, stream) => {
+        if (err) {
+          console.error(`❌ SSH shell error for ${socket.id}:`, err);
+          socket.emit('terminal:error', { message: err.message });
+          return;
+        }
+        
+        sshStream = stream;
+        socket.emit('terminal:connected');
+        
+        // Send data to client
+        stream.on('data', (data) => {
+          socket.emit('terminal:data', data.toString('utf-8'));
+        });
+        
+        // Handle stream close
+        stream.on('close', () => {
+          console.log(`🖥️ SSH stream closed for ${socket.id}`);
+          socket.emit('terminal:exit', { code: 0 });
+          sshConnection.end();
+          sshConnection = null;
+          sshStream = null;
+        });
+        
+        stream.stderr.on('data', (data) => {
+          socket.emit('terminal:data', data.toString('utf-8'));
+        });
+      });
+    });
+    
+    sshConnection.on('error', (err) => {
+      console.error(`❌ SSH connection error for ${socket.id}:`, err);
+      socket.emit('terminal:error', { message: err.message });
+      sshConnection = null;
+      sshStream = null;
+    });
+    
+    // Connect to SSH
+    sshConnection.connect({
+      host: host,
+      port: port,
+      username: username,
+      password: password,
+      readyTimeout: 30000
+    });
+  });
+  
+  /**
+   * Docker Terminal - Execute interactive shell in container
+   */
+  let dockerProcess = null;
+  
+  socket.on('docker:exec', (data) => {
+    const { containerId, shell = 'bash' } = data;
+    
+    console.log(`🖥️  Starting docker exec for ${socket.id}: container=${containerId}, shell=${shell}`);
+    
+    // Spawn docker exec process with interactive mode
+    dockerProcess = spawn('docker', ['exec', '-i', containerId, shell], {
+      env: { ...process.env, TERM: 'xterm-256color' }
+    });
+    
+    // Send stdout to client
+    dockerProcess.stdout.on('data', (data) => {
+      socket.emit('terminal:data', data.toString());
+    });
+    
+    // Send stderr to client
+    dockerProcess.stderr.on('data', (data) => {
+      socket.emit('terminal:data', data.toString());
+    });
+    
+    // Handle process exit
+    dockerProcess.on('exit', (code) => {
+      console.log(`🖥️  Docker exec process exited with code ${code} for ${socket.id}`);
+      socket.emit('terminal:exit', { code });
+      dockerProcess = null;
+    });
+    
+    // Handle process error
+    dockerProcess.on('error', (error) => {
+      console.error(`❌ Docker exec error for ${socket.id}:`, error);
+      socket.emit('terminal:error', { message: error.message });
+      dockerProcess = null;
+    });
+    
+    // Send connection success and initial prompt
+    socket.emit('terminal:connected');
+    
+    // Send a newline to trigger bash prompt after a short delay
+    setTimeout(() => {
+      if (dockerProcess && dockerProcess.stdin.writable) {
+        dockerProcess.stdin.write('\n');
+      }
+    }, 100);
+  });
+  
+  // Handle input from client terminal
+  socket.on('terminal:input', (data) => {
+    // SSH input
+    if (sshStream && sshStream.writable) {
+      sshStream.write(data);
+    }
+    // Docker exec input
+    else if (dockerProcess && dockerProcess.stdin.writable) {
+      dockerProcess.stdin.write(data);
+    }
+  });
+  
+  // Handle terminal close
+  socket.on('terminal:close', () => {
+    console.log(`🖥️  Terminal close requested for ${socket.id}`);
+    
+    // Close SSH connection
+    if (sshStream) {
+      sshStream.end();
+      sshStream = null;
+    }
+    if (sshConnection) {
+      sshConnection.end();
+      sshConnection = null;
+    }
+    
+    // Close docker process
+    if (dockerProcess) {
+      dockerProcess.kill();
+      dockerProcess = null;
+    }
+  });
+
+  /**
    * Update monitoring interval
    */
   socket.on('updateMonitoringInterval', (newIntervalMs) => {
@@ -184,6 +384,23 @@ io.on('connection', (socket) => {
     if (clientMonitors.has(socket.id)) {
       clearInterval(clientMonitors.get(socket.id));
       clientMonitors.delete(socket.id);
+    }
+    
+    // Clean up SSH connection
+    if (sshStream) {
+      sshStream.end();
+      sshStream = null;
+    }
+    if (sshConnection) {
+      sshConnection.end();
+      sshConnection = null;
+    }
+    
+    // Clean up docker terminal process
+    if (dockerProcess) {
+      dockerProcess.kill();
+      dockerProcess = null;
+      console.log(`🧹 Cleaned up terminal for ${socket.id}`);
     }
   });
 

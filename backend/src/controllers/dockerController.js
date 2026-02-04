@@ -489,3 +489,155 @@ exports.getContainerBashHistory = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Get all used ports
+ */
+exports.getUsedPorts = async (req, res, next) => {
+  try {
+    const ports = await dockerService.getUsedPorts();
+    res.json({
+      success: true,
+      data: ports,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Check if container name exists
+ */
+exports.checkContainerName = async (req, res, next) => {
+  try {
+    const { name } = req.params;
+    const exists = await dockerService.checkContainerNameExists(name);
+    res.json({
+      success: true,
+      data: { exists, name },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Check if ports are available
+ */
+exports.checkPortsAvailable = async (req, res, next) => {
+  try {
+    const { ports } = req.body;
+    if (!ports || !Array.isArray(ports)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ports array is required',
+      });
+    }
+    
+    const result = await dockerService.checkPortsAvailable(ports);
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Create custom container
+ */
+exports.createCustomContainer = async (req, res, next) => {
+  try {
+    const { name, os, user, password, portsInside, portsOutside } = req.body;
+    
+    // Validation
+    if (!name || !os || !user || !password || !portsInside || !portsOutside) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required: name, os, user, password, portsInside, portsOutside',
+      });
+    }
+    
+    const result = await dockerService.createCustomContainer({
+      name,
+      os,
+      user,
+      password,
+      portsInside,
+      portsOutside,
+    });
+    
+    // Log successful container creation
+    await logDockerAction(
+      'create',
+      'container',
+      result.containerName,
+      result.containerName,
+      `${name}-server`,
+      true,
+      null,
+      req
+    );
+    
+    res.json({
+      success: true,
+      message: result.message,
+      data: result,
+    });
+  } catch (error) {
+    // Log failed container creation
+    await logDockerAction(
+      'create',
+      'container',
+      req.body.name || 'unknown',
+      req.body.name || 'unknown',
+      `${req.body.name}-server`,
+      false,
+      error.message,
+      req
+    );
+    next(error);
+  }
+};
+
+/**
+ * Delete container completely with volumes
+ */
+exports.deleteContainerCompletely = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await dockerService.deleteContainerCompletely(id);
+    
+    // Log successful deletion
+    await logDockerAction(
+      'delete_complete',
+      'container',
+      id,
+      result.deleted.container,
+      result.deleted.image,
+      true,
+      null,
+      req
+    );
+    
+    res.json({
+      success: true,
+      message: result.message,
+      data: result.deleted,
+    });
+  } catch (error) {
+    // Log failed deletion
+    await logDockerAction(
+      'delete_complete',
+      'container',
+      req.params.id,
+      req.params.id,
+      'unknown',
+      false,
+      error.message,
+      req
+    );
+    next(error);
+  }
+};

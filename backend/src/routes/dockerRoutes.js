@@ -36,4 +36,13 @@ router.get('/stats', dockerController.getAllContainerStats);
 router.get('/system/info', dockerController.getSystemInfo);
 router.get('/system/disk-usage', dockerController.getDiskUsage);
 
+// Container creation routes
+router.get('/ports/used', dockerController.getUsedPorts);
+router.get('/containers/check-name/:name', dockerController.checkContainerName);
+router.post('/ports/check-available', dockerController.checkPortsAvailable);
+router.post('/containers/create', dockerController.createCustomContainer);
+
+// Complete deletion route
+router.delete('/containers/:id/complete', dockerController.deleteContainerCompletely);
+
 module.exports = router;

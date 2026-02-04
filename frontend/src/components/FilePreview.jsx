@@ -427,6 +427,43 @@ const FilePreview = ({ file, apiBaseUrl }) => {
       )
     }
 
+    // HTML preview - Render the actual HTML design
+    if (ext === 'html' && previewContent) {
+      return (
+        <div className="flex flex-col space-y-2">
+          <div className="flex items-center justify-between px-4 py-2 bg-orange-50 dark:bg-orange-900/20 rounded-t-lg border-b border-orange-200 dark:border-orange-800">
+            <div className="flex items-center space-x-2">
+              <FileText className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{file.originalName}</span>
+            </div>
+            <span className="text-xs text-gray-500 dark:text-gray-400 uppercase">HTML Preview</span>
+          </div>
+          <div className="bg-white dark:bg-gray-900 rounded-b-lg overflow-hidden">
+            <iframe
+              srcDoc={previewContent}
+              className="w-full h-[600px] border-0 bg-white"
+              title="HTML Preview"
+              sandbox="allow-scripts allow-same-origin"
+              onError={() => setError('Failed to load HTML preview')}
+            />
+          </div>
+          <div className="px-4 py-2 bg-orange-50 dark:bg-orange-900/20 rounded text-xs text-gray-600 dark:text-gray-400 flex justify-between items-center">
+            <span>Rendered HTML Preview</span>
+            <button
+              onClick={() => {
+                const blob = new Blob([previewContent], { type: 'text/html' })
+                const url = URL.createObjectURL(blob)
+                window.open(url, '_blank')
+              }}
+              className="px-3 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs"
+            >
+              Open in New Tab
+            </button>
+          </div>
+        </div>
+      )
+    }
+
     // Markdown preview with formatting
     if (ext === 'md' && previewContent) {
       // Simple markdown to HTML renderer

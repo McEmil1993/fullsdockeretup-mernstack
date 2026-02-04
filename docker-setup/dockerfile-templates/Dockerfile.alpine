@@ -1,0 +1,34 @@
+# Dockerfile for Alpine Linux
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+# Install OpenSSH and basic tools using apk
+RUN apk add --no-cache \
+    openssh \
+    sudo \
+    curl \
+    nano \
+    vim \
+    net-tools \
+    iputils \
+    bash
+
+# Generate SSH host keys
+RUN ssh-keygen -A
+
+# Set root password
+RUN echo 'root:admin123' | chpasswd
+
+# Enable root login and password auth
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config || \
+    sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config || \
+    sed -i 's/#PermitRootLogin no/PermitRootLogin yes/' /etc/ssh/sshd_config || \
+    echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config
+
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config || \
+    sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config || \
+    echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config
+
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd", "-D"]
