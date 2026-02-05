@@ -9,9 +9,11 @@ import * as dockerService from '../services/docker'
 import * as serverService from '../services/servers'
 import * as userService from '../services/users'
 import { fileUploadService } from '../services/fileUploads'
+import { usePermissions } from '../contexts/PermissionContext'
 
 const Dashboard = () => {
   const navigate = useNavigate()
+  const { hasPermission, canViewWidget } = usePermissions()
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
     totalContainers: 0,
@@ -141,20 +143,20 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
           Dashboard
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
           Docker Monitoring & Server Management Overview
         </p>
       </div>
 
       {/* Stats Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
           <SkeletonWidget />
           <SkeletonWidget />
           <SkeletonWidget />
@@ -162,63 +164,73 @@ const Dashboard = () => {
           <SkeletonWidget />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-          <div onClick={() => navigate('/docker')} className="cursor-pointer transform hover:scale-105 transition-transform">
-            <Widget
-              icon={Container}
-              title="Total Containers"
-              value={formatNumber(stats.totalContainers)}
-              trend="neutral"
-              color="blue"
-            />
-          </div>
-          <div onClick={() => navigate('/docker')} className="cursor-pointer transform hover:scale-105 transition-transform">
-            <Widget
-              icon={Activity}
-              title="Running Containers"
-              value={formatNumber(stats.runningContainers)}
-              trend={stats.runningContainers > 0 ? 'up' : 'down'}
-              color="green"
-            />
-          </div>
-          <div onClick={() => navigate('/servers')} className="cursor-pointer transform hover:scale-105 transition-transform">
-            <Widget
-              icon={Server}
-              title="Servers"
-              value={formatNumber(stats.totalServers)}
-              trend="neutral"
-              color="indigo"
-            />
-          </div>
-          <div onClick={() => navigate('/user')} className="cursor-pointer transform hover:scale-105 transition-transform">
-            <Widget
-              icon={Users}
-              title="Users"
-              value={formatNumber(stats.totalUsers)}
-              trend="neutral"
-              color="purple"
-            />
-          </div>
-          <div onClick={() => navigate('/file-upload')} className="cursor-pointer transform hover:scale-105 transition-transform">
-            <Widget
-              icon={Upload}
-              title="Files"
-              value={formatNumber(stats.totalFiles)}
-              trend="neutral"
-              color="pink"
-            />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+          {canViewWidget('containerStatus') && (
+            <div onClick={() => navigate('/docker')} className="cursor-pointer transform hover:scale-105 transition-transform">
+              <Widget
+                icon={Container}
+                title="Total Containers"
+                value={formatNumber(stats.totalContainers)}
+                trend="neutral"
+                color="blue"
+              />
+            </div>
+          )}
+          {canViewWidget('containerStatus') && (
+            <div onClick={() => navigate('/docker')} className="cursor-pointer transform hover:scale-105 transition-transform">
+              <Widget
+                icon={Activity}
+                title="Running Containers"
+                value={formatNumber(stats.runningContainers)}
+                trend={stats.runningContainers > 0 ? 'up' : 'down'}
+                color="green"
+              />
+            </div>
+          )}
+          {canViewWidget('totalServers') && (
+            <div onClick={() => navigate('/servers')} className="cursor-pointer transform hover:scale-105 transition-transform">
+              <Widget
+                icon={Server}
+                title="Servers"
+                value={formatNumber(stats.totalServers)}
+                trend="neutral"
+                color="indigo"
+              />
+            </div>
+          )}
+          {canViewWidget('activeUsers') && (
+            <div onClick={() => navigate('/user')} className="cursor-pointer transform hover:scale-105 transition-transform">
+              <Widget
+                icon={Users}
+                title="Users"
+                value={formatNumber(stats.totalUsers)}
+                trend="neutral"
+                color="purple"
+              />
+            </div>
+          )}
+          {canViewWidget('recentActivity') && (
+            <div onClick={() => navigate('/file-upload')} className="cursor-pointer transform hover:scale-105 transition-transform">
+              <Widget
+                icon={Upload}
+                title="Files"
+                value={formatNumber(stats.totalFiles)}
+                trend="neutral"
+                color="pink"
+              />
+            </div>
+          )}
         </div>
       )}
 
       {/* System Status */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Activity className="w-5 h-5" />
           System Status
         </h2>
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <div className="flex items-center gap-3 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse">
               <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
               <div className="flex-1">
@@ -242,7 +254,7 @@ const Dashboard = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {/* Docker Status */}
             <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <Container className="w-8 h-8 text-blue-600 dark:text-blue-400" />
@@ -284,9 +296,9 @@ const Dashboard = () => {
       </div>
 
       {/* Real-time Container Metrics Graph */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <Activity className="w-5 h-5" />
             Real-time Container Metrics
           </h2>

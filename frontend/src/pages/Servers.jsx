@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../contexts/PermissionContext';
 import Modal from '../components/Modal';
 import Table from '../components/Table';
 import Button from '../components/Button';
@@ -14,6 +15,7 @@ import * as serverService from '../services/servers';
 
 export default function Servers() {
   const { user } = useAuth();
+  const { hasPermission } = usePermissions();
   const [servers, setServers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -361,43 +363,44 @@ export default function Servers() {
       render: (value, row) => {
         if (!row) return null;
         const status = row.status || 'Active';
-        const canManage = user?.role === 'admin' || user?.role === 'teacher';
         
         return (
           <div className="flex gap-1 flex-wrap justify-start">
-            <button
-              onClick={() => handleView(row)}
-              className="p-1.5 rounded hover:bg-blue-100 transition-colors"
-              title="View Details"
-            >
-              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-            </button>
-            {canManage && status === 'Active' && (
-              <>
-                <button
-                  onClick={() => handleEdit(row)}
-                  className="p-1.5 rounded hover:bg-yellow-100 transition-colors"
-                  title="Edit"
-                >
-                  <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => handleDeactivate(row)}
-                  className="p-1.5 rounded hover:bg-red-100 transition-colors"
-                  title="Deactivate"
-                >
-                  <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </>
+            {hasPermission('serversManagement.servers.canViewDetails') && (
+              <button
+                onClick={() => handleView(row)}
+                className="p-1.5 rounded hover:bg-blue-100 transition-colors"
+                title="View Details"
+              >
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
             )}
-            {canManage && status !== 'Active' && (
+            {hasPermission('serversManagement.servers.canEdit') && status === 'Active' && (
+              <button
+                onClick={() => handleEdit(row)}
+                className="p-1.5 rounded hover:bg-yellow-100 transition-colors"
+                title="Edit"
+              >
+                <svg className="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            )}
+            {hasPermission('serversManagement.servers.canDeactivate') && status === 'Active' && (
+              <button
+                onClick={() => handleDeactivate(row)}
+                className="p-1.5 rounded hover:bg-red-100 transition-colors"
+                title="Deactivate"
+              >
+                <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+            {hasPermission('serversManagement.servers.canEdit') && status !== 'Active' && (
               <button
                 onClick={() => handleReactivate(row._id)}
                 className="p-1.5 rounded hover:bg-green-100 transition-colors"
@@ -414,7 +417,7 @@ export default function Servers() {
     }
   ];
 
-  const canManageServers = user?.role === 'admin' || user?.role === 'teacher';
+  // Remove old role-based check, now using hasPermission
 
   // Filter and search servers
   const filteredServers = servers.filter(server => {
@@ -445,31 +448,32 @@ export default function Servers() {
   }, [searchQuery]);
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Servers Management</h1>
-        <div className="flex gap-4 items-center">
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">Servers Management</h1>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full sm:w-auto px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All Servers</option>
             <option value="Active">Active</option>
             <option value="Deactivated">Deactivated</option>
           </select>
-          {canManageServers && (
-            <>
+          {hasPermission('serversManagement.canAddNewServer') && (
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
               <Button 
                 variant="secondary" 
                 onClick={() => setShowImportModal(true)}
+                className="w-full sm:w-auto"
               >
                 Import Excel
               </Button>
-              <Button onClick={handleAddNew}>
+              <Button onClick={handleAddNew} className="w-full sm:w-auto">
                 Add New Server
               </Button>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -509,11 +513,11 @@ export default function Servers() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-4 flex justify-between items-center">
+        <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
           <div className="text-sm text-gray-600">
             Page {currentPage} of {totalPages}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap justify-center">
             <button
               onClick={() => setCurrentPage(1)}
               disabled={currentPage === 1}

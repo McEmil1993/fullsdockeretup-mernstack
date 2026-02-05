@@ -5,7 +5,7 @@ import api from './api';
  */
 export const getDocuments = async (options = {}) => {
   const { limit = 100, skip = 0, sortBy = 'order', sortOrder = 'asc' } = options;
-  const response = await api.get('/documents', {
+  const response = await api.get('/api/documents', {
     params: { limit, skip, sortBy, sortOrder }
   });
   return response.data;
@@ -15,7 +15,7 @@ export const getDocuments = async (options = {}) => {
  * Get single document by ID
  */
 export const getDocumentById = async (id) => {
-  const response = await api.get(`/documents/${id}`);
+  const response = await api.get(`/api/documents/${id}`);
   return response.data;
 };
 
@@ -23,7 +23,7 @@ export const getDocumentById = async (id) => {
  * Create new document
  */
 export const createDocument = async (data) => {
-  const response = await api.post('/documents', data);
+  const response = await api.post('/api/documents', data);
   return response.data;
 };
 
@@ -31,7 +31,7 @@ export const createDocument = async (data) => {
  * Update document
  */
 export const updateDocument = async (id, updates) => {
-  const response = await api.put(`/documents/${id}`, updates);
+  const response = await api.put(`/api/documents/${id}`, updates);
   return response.data;
 };
 
@@ -39,7 +39,7 @@ export const updateDocument = async (id, updates) => {
  * Delete document
  */
 export const deleteDocument = async (id) => {
-  const response = await api.delete(`/documents/${id}`);
+  const response = await api.delete(`/api/documents/${id}`);
   return response.data;
 };
 
@@ -47,7 +47,7 @@ export const deleteDocument = async (id) => {
  * Update document order
  */
 export const updateDocumentOrder = async (documentOrders) => {
-  const response = await api.post('/documents/order', { documentOrders });
+  const response = await api.post('/api/documents/order', { documentOrders });
   return response.data;
 };
 
@@ -55,7 +55,7 @@ export const updateDocumentOrder = async (documentOrders) => {
  * Search documents
  */
 export const searchDocuments = async (query) => {
-  const response = await api.get('/documents/search', {
+  const response = await api.get('/api/documents/search', {
     params: { q: query }
   });
   return response.data;
@@ -65,6 +65,6 @@ export const searchDocuments = async (query) => {
  * Delete all documents
  */
 export const deleteAllDocuments = async () => {
-  const response = await api.delete('/documents');
+  const response = await api.delete('/api/documents');
   return response.data;
 };

@@ -1,90 +1,63 @@
-const { CohereClient } = require('cohere-ai');
+const axios = require('axios');
 
-// Lazy initialize Cohere client only when needed
-let cohere = null;
-
-const getCohereClient = () => {
-  if (!process.env.COHERE_API_KEY) {
-    throw new Error('Cohere API key is not configured');
-  }
-  
-  if (!cohere) {
-    cohere = new CohereClient({
-      token: process.env.COHERE_API_KEY,
-    });
-  }
-  
-  return cohere;
-};
+// Ollama API configuration
+const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'deepseek-coder:6.7b';
 
 /**
- * Chat with Cohere AI
+ * Chat with Ollama AI
  * @param {Array} messages - Array of message objects with role and content
  * @param {Object} options - Additional options for the API call
- * @returns {Promise<Object>} - Response from Cohere
+ * @returns {Promise<Object>} - Response from Ollama
  */
 const chat = async (messages, options = {}) => {
   try {
-    // Get Cohere client (lazy initialization)
-    const client = getCohereClient();
-
-    // Default options
     const {
-      model = 'command-r-08-2024',
+      model = OLLAMA_MODEL,
       temperature = 0.7,
-      max_tokens = 2000,
     } = options;
 
-    // Convert messages to Cohere format
-    // Cohere uses chat history format differently
-    const chatHistory = [];
-    let finalMessage = '';
-    
-    for (let i = 0; i < messages.length; i++) {
-      const msg = messages[i];
-      if (i === messages.length - 1) {
-        // Last message is the current user message
-        finalMessage = msg.content;
-      } else {
-        // Previous messages go to chat history
-        chatHistory.push({
-          role: msg.role === 'assistant' ? 'CHATBOT' : 'USER',
-          message: msg.content,
-        });
+    console.log("model", model);
+
+    // Build the prompt from messages
+    let prompt = '';
+    for (const msg of messages) {
+      if (msg.role === 'user') {
+        prompt += `User: ${msg.content}\n`;
+      } else if (msg.role === 'assistant') {
+        prompt += `Assistant: ${msg.content}\n`;
       }
     }
+    prompt += 'Assistant: ';
 
-    // Call Cohere API
-    const response = await client.chat({
-      model,
-      message: finalMessage,
-      chatHistory: chatHistory.length > 0 ? chatHistory : undefined,
-      temperature,
-      maxTokens: max_tokens,
+    // Call Ollama API (non-streaming)
+    const response = await axios.post(`${OLLAMA_BASE_URL}/api/generate`, {
+      model: model,
+      prompt: prompt,
+      stream: false,
+      options: {
+        temperature: temperature,
+      }
     });
 
     return {
-      message: response.text,
+      message: response.data.response,
       model: model,
       usage: {
-        prompt_tokens: response.meta?.tokens?.inputTokens || 0,
-        completion_tokens: response.meta?.tokens?.outputTokens || 0,
-        total_tokens: (response.meta?.tokens?.inputTokens || 0) + (response.meta?.tokens?.outputTokens || 0),
+        prompt_tokens: response.data.prompt_eval_count || 0,
+        completion_tokens: response.data.eval_count || 0,
+        total_tokens: (response.data.prompt_eval_count || 0) + (response.data.eval_count || 0),
       },
-      finishReason: response.finishReason || 'complete',
+      finishReason: response.data.done ? 'stop' : 'incomplete',
     };
   } catch (error) {
-    console.error('Cohere API Error:', error);
+    console.error('Ollama API Error:', error.message);
     
-    if (error.statusCode === 401) {
-      throw new Error('Invalid Cohere API key');
-    } else if (error.statusCode === 429) {
-      throw new Error('Cohere API rate limit exceeded. Please try again later.');
-    } else if (error.statusCode === 500) {
-      throw new Error('Cohere service is temporarily unavailable');
+    if (error.code === 'ECONNREFUSED') {
+      throw new Error('Ollama server is not running. Please start Ollama.');
     }
     
-    throw new Error(error.message || 'Failed to communicate with Cohere');
+    throw new Error(error.response?.data?.error || error.message || 'Failed to communicate with Ollama');
   }
 };
 
@@ -92,81 +65,76 @@ const chat = async (messages, options = {}) => {
  * Chat with streaming response
  * @param {Array} messages - Array of message objects with role and content
  * @param {Object} options - Additional options for the API call
- * @returns {Promise<Stream>} - Streaming response from Cohere
+ * @returns {Promise<Stream>} - Streaming response from Ollama
  */
 const chatStream = async (messages, options = {}) => {
   try {
-    // Get Cohere client (lazy initialization)
-    const client = getCohereClient();
-
     const {
-      model = 'command-r-08-2024',
+      model = OLLAMA_MODEL,
       temperature = 0.7,
-      max_tokens = 2000,
     } = options;
 
-    // Convert messages to Cohere format
-    const chatHistory = [];
-    let finalMessage = '';
+    console.log("model", model);
     
-    for (let i = 0; i < messages.length; i++) {
-      const msg = messages[i];
-      if (i === messages.length - 1) {
-        finalMessage = msg.content;
-      } else {
-        chatHistory.push({
-          role: msg.role === 'assistant' ? 'CHATBOT' : 'USER',
-          message: msg.content,
-        });
+
+    // Build the prompt from messages
+    let prompt = '';
+    for (const msg of messages) {
+      if (msg.role === 'user') {
+        prompt += `User: ${msg.content}\n`;
+      } else if (msg.role === 'assistant') {
+        prompt += `Assistant: ${msg.content}\n`;
       }
     }
+    prompt += 'Assistant: ';
 
-    // Call Cohere streaming API
-    const stream = await client.chatStream({
-      model,
-      message: finalMessage,
-      chatHistory: chatHistory.length > 0 ? chatHistory : undefined,
-      temperature,
-      maxTokens: max_tokens,
+    // Call Ollama streaming API
+    const response = await axios.post(`${OLLAMA_BASE_URL}/api/generate`, {
+      model: model,
+      prompt: prompt,
+      stream: true,
+      options: {
+        temperature: temperature,
+      }
+    }, {
+      responseType: 'stream'
     });
 
-    return stream;
+    return response.data;
   } catch (error) {
-    console.error('Cohere Streaming Error:', error);
+    console.error('Ollama Streaming Error:', error.message);
     throw new Error(error.message || 'Failed to start streaming chat');
   }
 };
 
 /**
- * Get available models
+ * Get available models from Ollama
  * @returns {Promise<Array>} - List of available models
  */
 const getModels = async () => {
   try {
-    // Return list of Cohere models
-    // Cohere doesn't have a models.list() endpoint
-    const cohereModels = [
-      {
-        id: 'command-r-08-2024',
-        name: 'Command R (Aug 2024)',
-        description: 'Latest stable model for conversational AI',
-      },
-      {
-        id: 'command-r-plus-08-2024',
-        name: 'Command R+ (Aug 2024)',
-        description: 'Most powerful model with best quality',
-      },
-      {
-        id: 'command-r7b-12-2024',
-        name: 'Command R7B (Dec 2024)',
-        description: 'Lightweight 7B parameter model',
-      },
-    ];
+    // Get list of models from Ollama
+    const response = await axios.get(`${OLLAMA_BASE_URL}/api/tags`);
+    
+    const models = response.data.models.map(model => ({
+      id: model.name,
+      name: model.name,
+      description: `Size: ${(model.size / 1024 / 1024 / 1024).toFixed(2)} GB`,
+      modified: model.modified_at,
+    }));
 
-    return cohereModels;
+    return models;
   } catch (error) {
-    console.error('Cohere Models Error:', error);
-    throw new Error('Failed to fetch available models');
+    console.error('Ollama Models Error:', error.message);
+    
+    // Return default model if API fails
+    return [
+      {
+        id: OLLAMA_MODEL,
+        name: OLLAMA_MODEL,
+        description: 'Default Ollama model',
+      }
+    ];
   }
 };
 

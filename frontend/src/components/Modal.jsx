@@ -16,21 +16,26 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   if (!isOpen) return null
 
   const sizes = {
+    xs: 'max-w-sm',
     sm: 'max-w-md',
     md: 'max-w-lg',
-    lg: 'max-w-2xl',
+    lg: 'max-w-[95vw]',
     xl: 'max-w-4xl',
+    xxl: 'max-w-6xl',
+    xxxl: 'max-w-7xl',
+    full: 'max-w-full',
+    screen: 'w-screen h-screen max-w-none',
   }
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      onClick={onClose}
+      // onClick={onClose}
     >
       {/* Backdrop with fade animation */}
       <div
-        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity duration-300 animate-fadeIn"
-        onClick={onClose}
+        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity duration-300 animate-fadeIn" style={{ marginTop: '-20px' }}
+        // onClick={onClose}
       ></div>
 
       {/* Modal content */}

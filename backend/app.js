@@ -13,6 +13,8 @@ const conversationRoutes = require('./src/routes/conversationRoutes');
 const userPreferenceRoutes = require('./src/routes/userPreferenceRoutes');
 const markdownDocumentRoutes = require('./src/routes/markdownDocumentRoutes');
 const dockerNotificationRoutes = require('./src/routes/dockerNotificationRoutes');
+const roleRoutes = require('./src/routes/roleRoutes');
+const permissionRoutes = require('./src/routes/permissionRoutes');
 const errorHandler = require('./src/middleware/errorHandler');
 
 const app = express();
@@ -27,16 +29,16 @@ const allowedOrigins = (process.env.CLIENT_ORIGIN || process.env.FRONTEND_URL ||
   .filter(Boolean);
 
 // Log CORS configuration for debugging
-console.log('🔒 CORS Configuration:');
-console.log('   Allowed Origins:', allowedOrigins.length > 0 ? allowedOrigins : 'ALL (Development mode)');
-console.log('   Credentials:', true);
+// console.log('🔒 CORS Configuration:');
+// console.log('   Allowed Origins:', allowedOrigins.length > 0 ? allowedOrigins : 'ALL (Development mode)');
+// console.log('   Credentials:', true);
 
 app.use(
   cors({
     origin(origin, callback) {
       // Log incoming requests for debugging
       if (origin) {
-        console.log(`📡 CORS Request from: ${origin}`);
+        // console.log(`📡 CORS Request from: ${origin}`);
       }
       
       // Allow non-browser tools (no Origin header)
@@ -53,7 +55,7 @@ app.use(
       
       // Check if origin is in allowed list
       if (allowedOrigins.includes(origin)) {
-        console.log(`✅ Allowing origin: ${origin}`);
+        // console.log(`✅ Allowing origin: ${origin}`);
         return callback(null, true);
       }
       
@@ -100,6 +102,10 @@ app.use('/api/preferences', userPreferenceRoutes);
 app.use('/api/documents', markdownDocumentRoutes);
 
 app.use('/api/notifications', dockerNotificationRoutes);
+
+app.use('/api/roles', roleRoutes);
+
+app.use('/api/permissions', permissionRoutes);
 
 // Serve static files from public/uploads
 app.use('/api/uploads', express.static('public/uploads'));

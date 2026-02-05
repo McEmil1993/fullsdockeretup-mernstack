@@ -7,13 +7,19 @@ import Toast from '../components/Toast'
 import ConfirmDialog from '../components/ConfirmDialog'
 import SkeletonTable from '../components/SkeletonTable'
 import Skeleton from '../components/Skeleton'
+import ProtectedPage from '../components/ProtectedPage'
+import PermissionGate from '../components/PermissionGate'
 import { Plus, RotateCcw, Copy, Check } from 'lucide-react'
 import * as userService from '../services/users'
+import * as roleService from '../services/roles'
+import { usePermissions } from '../contexts/PermissionContext'
 
 const User = () => {
+  const { hasPermission } = usePermissions()
   const [loading, setLoading] = useState(true)
   const [allData, setAllData] = useState([])
   const [totalCount, setTotalCount] = useState(0)
+  const [availableRoles, setAvailableRoles] = useState([])
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
@@ -51,7 +57,25 @@ const User = () => {
 
   useEffect(() => {
     loadUsers(currentPage, pageSize)
+    loadRoles()
   }, [currentPage, pageSize])
+
+  const loadRoles = async () => {
+    try {
+      const response = await roleService.getAllRoles()
+      if (response.success) {
+        setAvailableRoles(response.data || [])
+      }
+    } catch (error) {
+      console.error('Failed to load roles:', error)
+      // Fallback to default roles if API fails
+      setAvailableRoles([
+        { name: 'supreadmin', displayName: 'Super Admin' },
+        { name: 'admin', displayName: 'Admin' },
+        { name: 'user', displayName: 'User' }
+      ])
+    }
+  }
   
   // Form validation errors
   const [errors, setErrors] = useState({ name: '', email: '', role: '', password: '' })
@@ -506,21 +530,24 @@ const User = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            User
-          </h1>
-          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
-            Manage user accounts and permissions
-          </p>
+    <ProtectedPage permission="userManagement.canView" message="You do not have permission to view user management!">
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              User
+            </h1>
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+              Manage user accounts and permissions
+            </p>
+          </div>
+          <PermissionGate permission="userManagement.canAddNewUser">
+            <Button onClick={handleAddNew} variant="primary" className="w-full sm:w-auto">
+              <Plus className="w-4 h-4 mr-2 inline" />
+              Add New
+            </Button>
+          </PermissionGate>
         </div>
-        <Button onClick={handleAddNew} variant="primary" className="w-full sm:w-auto">
-          <Plus className="w-4 h-4 mr-2 inline" />
-          Add New
-        </Button>
-      </div>
 
       {/* Pagination - Top */}
       <Pagination
@@ -539,9 +566,9 @@ const User = () => {
       <Table
         data={paginatedData}
         columns={columns}
-        onEdit={handleEdit}
-        onStatusChange={handleStatusChange}
-        onResetPassword={handleResetPassword}
+        onEdit={hasPermission('userManagement.users.canEdit') ? handleEdit : null}
+        onStatusChange={(hasPermission('userManagement.users.canSetActive') || hasPermission('userManagement.users.canSetInactive')) ? handleStatusChange : null}
+        onResetPassword={hasPermission('userManagement.users.canResetPassword') ? handleResetPassword : null}
       />
 
       {/* Pagination - Bottom */}
@@ -730,13 +757,17 @@ const User = () => {
               }`}
             >
               <option value="">Select Role</option>
-              <option value="admin">Admin</option>
-              <option value="instructor">Instructor</option>
-              <option value="student">Student</option>
-              <option value="staff">Staff</option>
+              {availableRoles.map((role) => (
+                <option key={role.name} value={role.name}>
+                  {role.displayName}
+                </option>
+              ))}
             </select>
             {touched.role && errors.role && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.role}</p>
+            )}
+            {availableRoles.length === 0 && (
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Loading roles...</p>
             )}
           </div>
           {!editingItem && (
@@ -812,7 +843,8 @@ const User = () => {
           </div>
         </div>
       </Modal>
-    </div>
+      </div>
+    </ProtectedPage>
   )
 }
 

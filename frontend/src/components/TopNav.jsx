@@ -152,15 +152,15 @@ const TopNav = ({ onMenuClick }) => {
   const toggleSound = async () => {
     const newValue = !soundEnabled
     setSoundEnabled(newValue)
-    // Try API, fall back to localStorage
+    // Save to MongoDB only
     try {
       await preferenceService.updatePreference('notificationSoundEnabled', newValue)
     } catch (error) {
-      localStorage.setItem('notificationSoundEnabled', newValue.toString())
+      console.error('Failed to save notification sound preference to MongoDB:', error)
     }
   }
 
-  // Load sound preference from database
+  // Load sound preference from MongoDB
   useEffect(() => {
     const loadSoundPreference = async () => {
       try {
@@ -169,11 +169,7 @@ const TopNav = ({ onMenuClick }) => {
           setSoundEnabled(response.data.notificationSoundEnabled)
         }
       } catch (error) {
-        // Silently fall back to localStorage
-        const savedSoundPreference = localStorage.getItem('notificationSoundEnabled')
-        if (savedSoundPreference !== null) {
-          setSoundEnabled(savedSoundPreference === 'true')
-        }
+        console.error('Failed to load sound preference from MongoDB:', error)
       }
     }
     loadSoundPreference()
@@ -388,7 +384,7 @@ const TopNav = ({ onMenuClick }) => {
           <input
             type="text"
             placeholder="Search..."
-            className="pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 w-48 lg:w-64"
+            className="pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 w-32 sm:w-48 lg:w-64"
           />
         </div> */}
       </div>

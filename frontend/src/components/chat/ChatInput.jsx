@@ -1,7 +1,7 @@
-import { Send, Loader } from 'lucide-react'
+import { Send, Loader, Square } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 
-const ChatInput = ({ onSend, disabled, placeholder = 'Type your message...' }) => {
+const ChatInput = ({ onSend, disabled, placeholder = 'Type your message...', onStop, isStreaming }) => {
   const [input, setInput] = useState('')
   const textareaRef = useRef(null)
 
@@ -45,7 +45,7 @@ const ChatInput = ({ onSend, disabled, placeholder = 'Type your message...' }) =
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="relative flex items-end">
+      <div className="flex items-end gap-2">
         <textarea
           ref={textareaRef}
           value={input}
@@ -54,27 +54,42 @@ const ChatInput = ({ onSend, disabled, placeholder = 'Type your message...' }) =
           placeholder={placeholder}
           disabled={disabled}
           rows="1"
-          className="w-full px-4 py-3 pr-24 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none overflow-y-auto transition-all duration-100"
+          className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none overflow-y-auto transition-all duration-100"
           style={{ minHeight: '48px', maxHeight: '300px' }}
         />
-        <button
-          type="submit"
-          disabled={disabled || !input.trim()}
-          className="absolute right-2 bottom-2 
-                    w-12 h-12 
-                    bg-gray-800 text-white 
-                    rounded-full 
-                    hover:bg-gray-700 
-                    disabled:bg-gray-600 disabled:cursor-not-allowed 
-                    transition-colors 
-                    flex items-center justify-center"
-        >
-          {disabled ? (
-            <Loader className="w-5 h-5 animate-spin" />
-          ) : (
-            <Send className="w-5 h-5" />
-          )}
-        </button>
+        {isStreaming ? (
+          <button
+            type="button"
+            onClick={onStop}
+            className="w-12 h-12 flex-shrink-0
+                      bg-red-600 text-white 
+                      rounded-full 
+                      hover:bg-red-700 
+                      transition-colors 
+                      flex items-center justify-center"
+            title="Stop generation"
+          >
+            <Square className="w-5 h-5" fill="currentColor" />
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={disabled || !input.trim()}
+            className="w-12 h-12 flex-shrink-0
+                      bg-gray-800 text-white 
+                      rounded-full 
+                      hover:bg-gray-700 
+                      disabled:bg-gray-600 disabled:cursor-not-allowed 
+                      transition-colors 
+                      flex items-center justify-center"
+          >
+            {disabled ? (
+              <Loader className="w-5 h-5 animate-spin" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
+          </button>
+        )}
       </div>
     </form>
   )

@@ -93,21 +93,40 @@ class FileUploadService {
 
   async getAllFiles(page, limit, filters = {}) {
     try {
-      const query = {};
+      const userId = filters.userId; // Current logged-in user
       
-      // Build query from filters
+      // Build query - show files uploaded by user OR shared with user
+      const query = {
+        $or: [
+          { uploadedBy: userId }, // Files uploaded by user
+          { 'sharedWith.userId': userId }, // Files shared with user
+          { isPublic: true } // Public files
+        ]
+      };
+      
+      // Additional filters
       if (filters.category && filters.category !== 'all') {
         query.category = filters.category;
       }
-      if (filters.uploadedBy) {
-        query.uploadedBy = filters.uploadedBy;
-      }
+      
       if (filters.search) {
-        query.$or = [
-          { fileName: { $regex: filters.search, $options: 'i' } },
-          { originalName: { $regex: filters.search, $options: 'i' } },
-          { uploadedByName: { $regex: filters.search, $options: 'i' } }
-        ];
+        query.$and = query.$and || [];
+        query.$and.push({
+          $or: [
+            { fileName: { $regex: filters.search, $options: 'i' } },
+            { originalName: { $regex: filters.search, $options: 'i' } },
+            { uploadedByName: { $regex: filters.search, $options: 'i' } }
+          ]
+        });
+      }
+      
+      // Filter by view type
+      if (filters.viewType === 'myFiles') {
+        query.$or = [{ uploadedBy: userId }];
+      } else if (filters.viewType === 'sharedWithMe') {
+        query.$or = [{ 'sharedWith.userId': userId }];
+      } else if (filters.viewType === 'public') {
+        query.$or = [{ isPublic: true }];
       }
 
       // Get total count
@@ -118,14 +137,16 @@ class FileUploadService {
       if (page !== undefined && limit !== undefined) {
         const skip = (page - 1) * limit;
         files = await FileUpload.find(query)
-          .sort({ uploadProgress: 1, createdAt: -1 }) // ascending by progress, descending by time
+          .sort({ uploadProgress: 1, createdAt: -1 })
           .skip(skip)
           .limit(limit)
-          .populate('uploadedBy', 'username email');
+          .populate('uploadedBy', 'username email')
+          .populate('sharedWith.userId', 'username email');
       } else {
         files = await FileUpload.find(query)
           .sort({ uploadProgress: 1, createdAt: -1 })
-          .populate('uploadedBy', 'username email');
+          .populate('uploadedBy', 'username email')
+          .populate('sharedWith.userId', 'username email');
       }
 
       return {
@@ -414,6 +435,121 @@ class FileUploadService {
       }
     } catch (error) {
       console.error('Error cleaning up chunks:', error);
+    }
+  }
+
+  // Sharing Methods
+  async shareFile(fileId, ownerId, targetUserIds, permissions = {}) {
+    try {
+      const file = await FileUpload.findById(fileId);
+      
+      if (!file) {
+        throw new Error('File not found');
+      }
+      
+      // Check if current user is the owner
+      if (file.uploadedBy.toString() !== ownerId.toString()) {
+        throw new Error('Only file owner can share this file');
+      }
+      
+      // If targetUserIds is empty, clear all shares
+      if (!targetUserIds || targetUserIds.length === 0) {
+        file.sharedWith = [];
+        await file.save();
+        return file;
+      }
+      
+      // Default permissions if not provided
+      const defaultPermissions = {
+        canView: true,
+        canDownload: permissions.canDownload || false,
+        canCopyLink: permissions.canCopyLink || false,
+        canShare: permissions.canShare || false,
+        canDelete: permissions.canDelete || false
+      };
+      
+      // Replace entire sharedWith array with new selection
+      file.sharedWith = targetUserIds.map(userId => ({
+        userId: userId,
+        permissions: defaultPermissions,
+        sharedAt: new Date()
+      }));
+      
+      await file.save();
+      await file.populate('sharedWith.userId', 'username email');
+      
+      return file;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async unshareFile(fileId, ownerId, targetUserId) {
+    try {
+      const file = await FileUpload.findById(fileId);
+      
+      if (!file) {
+        throw new Error('File not found');
+      }
+      
+      // Check if current user is the owner
+      if (file.uploadedBy.toString() !== ownerId.toString()) {
+        throw new Error('Only file owner can unshare this file');
+      }
+      
+      // Remove user from sharedWith array
+      file.sharedWith = file.sharedWith.filter(
+        share => share.userId.toString() !== targetUserId.toString()
+      );
+      
+      await file.save();
+      await file.populate('sharedWith.userId', 'username email');
+      
+      return file;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async togglePublic(fileId, ownerId) {
+    try {
+      const file = await FileUpload.findById(fileId);
+      
+      if (!file) {
+        throw new Error('File not found');
+      }
+      
+      // Check if current user is the owner
+      if (file.uploadedBy.toString() !== ownerId.toString()) {
+        throw new Error('Only file owner can change visibility');
+      }
+      
+      file.isPublic = !file.isPublic;
+      await file.save();
+      
+      return file;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getSharedUsers(fileId, ownerId) {
+    try {
+      const file = await FileUpload.findById(fileId)
+        .populate('sharedWith.userId', 'username email');
+      
+      if (!file) {
+        throw new Error('File not found');
+      }
+      
+      // Check if current user is the owner
+      if (file.uploadedBy.toString() !== ownerId.toString()) {
+        throw new Error('Only file owner can view shared users');
+      }
+      
+      return file.sharedWith;
+    } catch (error) {
+      throw error;
     }
   }
 }

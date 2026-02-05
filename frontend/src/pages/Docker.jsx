@@ -45,10 +45,12 @@ import CreateContainerForm from '../components/docker/CreateContainerForm'
 import DockerTerminal from '../components/DockerTerminal'
 import useWebSocket from '../hooks/useWebSocket'
 import PasswordPrompt from '../components/PasswordPrompt'
+import { usePermissions } from '../contexts/PermissionContext'
 
 const SOCKET_URL = import.meta.env.VITE_WS_URL || 'http://localhost:3060'
 
 export default function Docker() {
+  const { hasPermission } = usePermissions()
   const [activeTab, setActiveTab] = useState('containers')
   const [containers, setContainers] = useState([])
   const [images, setImages] = useState([])
@@ -855,7 +857,7 @@ export default function Docker() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Notifications */}
       <NotificationContainer 
         notifications={notifications} 
@@ -865,7 +867,7 @@ export default function Docker() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Container className="w-7 h-7" />
             Docker Monitor
             {socketConnected ? (
@@ -892,7 +894,7 @@ export default function Docker() {
       </div>
 
       {/* System Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {widgetsLoading ? (
           // Show skeleton loaders while loading
           <>
@@ -1051,7 +1053,7 @@ export default function Docker() {
                   )}
                   
                   {/* Create Container Button */}
-                  {!selectionMode && (
+                  {!selectionMode && hasPermission('dockerMonitor.canCreateContainer') && (
                     <button
                       onClick={() => setShowCreateForm(true)}
                       className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 font-medium"
@@ -1265,73 +1267,91 @@ export default function Docker() {
                             <div className="flex items-center gap-1">
                               {container.state.toLowerCase() === 'running' ? (
                                 <>
-                                  <button
-                                    onClick={() => handleStopContainer(container.id, container.name)}
-                                    className="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                                    title="Stop"
-                                  >
-                                    <StopCircle className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleRestartContainer(container.id, container.name)}
-                                    className="p-1.5 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                                    title="Restart"
-                                  >
-                                    <RotateCw className="w-4 h-4" />
-                                  </button>
+                                  {hasPermission('dockerMonitor.containers.canStop') && (
+                                    <button
+                                      onClick={() => handleStopContainer(container.id, container.name)}
+                                      className="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                      title="Stop"
+                                    >
+                                      <StopCircle className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                  {hasPermission('dockerMonitor.containers.canRestart') && (
+                                    <button
+                                      onClick={() => handleRestartContainer(container.id, container.name)}
+                                      className="p-1.5 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                                      title="Restart"
+                                    >
+                                      <RotateCw className="w-4 h-4" />
+                                    </button>
+                                  )}
                                 </>
                               ) : (
+                                hasPermission('dockerMonitor.containers.canRestart') && (
+                                  <button
+                                    onClick={() => handleStartContainer(container.id, container.name)}
+                                    className="p-1.5 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+                                    title="Start"
+                                  >
+                                    <PlayCircle className="w-4 h-4" />
+                                  </button>
+                                )
+                              )}
+                              {hasPermission('dockerMonitor.containers.canViewDetails') && (
                                 <button
-                                  onClick={() => handleStartContainer(container.id, container.name)}
-                                  className="p-1.5 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
-                                  title="Start"
+                                  onClick={() => handleViewDetails(container)}
+                                  className="p-1.5 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded transition-colors"
+                                  title="View Details"
                                 >
-                                  <PlayCircle className="w-4 h-4" />
+                                  <Eye className="w-4 h-4" />
                                 </button>
                               )}
-                              <button
-                                onClick={() => handleViewDetails(container)}
-                                className="p-1.5 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded transition-colors"
-                                title="View Details"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleViewHistory(container)}
-                                className="p-1.5 text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
-                                title="View Action History"
-                              >
-                                <History className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleViewLogs(container.id, container.name)}
-                                className="p-1.5 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                                title="View Logs"
-                              >
-                                <Terminal className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleOpenTerminal(container)}
-                                className="p-1.5 text-cyan-600 hover:text-cyan-800 dark:text-cyan-400 dark:hover:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded transition-colors"
-                                title="Open Terminal (SSH or Docker Exec)"
-                                disabled={container.state.toLowerCase() !== 'running'}
-                              >
-                                <Terminal className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleRecreateContainer(container.id, container.name)}
-                                className="p-1.5 text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors"
-                                title="Recreate Container"
-                              >
-                                <RefreshCw className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteContainerCompletely(container.id, container.name)}
-                                className="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                                title="Delete Completely (with volumes)"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              {hasPermission('dockerMonitor.containers.canViewActionHistory') && (
+                                <button
+                                  onClick={() => handleViewHistory(container)}
+                                  className="p-1.5 text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
+                                  title="View Action History"
+                                >
+                                  <History className="w-4 h-4" />
+                                </button>
+                              )}
+                              {hasPermission('dockerMonitor.containers.canViewLogs') && (
+                                <button
+                                  onClick={() => handleViewLogs(container.id, container.name)}
+                                  className="p-1.5 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                  title="View Logs"
+                                >
+                                  <Terminal className="w-4 h-4" />
+                                </button>
+                              )}
+                              {hasPermission('dockerMonitor.containers.canOpenTerminal') && (
+                                <button
+                                  onClick={() => handleOpenTerminal(container)}
+                                  className="p-1.5 text-cyan-600 hover:text-cyan-800 dark:text-cyan-400 dark:hover:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded transition-colors"
+                                  title="Open Terminal (SSH or Docker Exec)"
+                                  disabled={container.state.toLowerCase() !== 'running'}
+                                >
+                                  <Terminal className="w-4 h-4" />
+                                </button>
+                              )}
+                              {hasPermission('dockerMonitor.containers.canRecreate') && (
+                                <button
+                                  onClick={() => handleRecreateContainer(container.id, container.name)}
+                                  className="p-1.5 text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors"
+                                  title="Recreate Container"
+                                >
+                                  <RefreshCw className="w-4 h-4" />
+                                </button>
+                              )}
+                              {hasPermission('dockerMonitor.containers.canDelete') && (
+                                <button
+                                  onClick={() => handleDeleteContainerCompletely(container.id, container.name)}
+                                  className="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                                  title="Delete Completely (with volumes)"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -1370,13 +1390,15 @@ export default function Docker() {
                     />
                   </div>
                   
-                  <button
-                    onClick={handlePruneImages}
-                    className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm flex items-center gap-2 whitespace-nowrap"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Prune
-                  </button>
+                  {hasPermission('dockerMonitor.images.canPrune') && (
+                    <button
+                      onClick={handlePruneImages}
+                      className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm flex items-center gap-2 whitespace-nowrap"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Prune
+                    </button>
+                  )}
                 </div>
               </div>
               

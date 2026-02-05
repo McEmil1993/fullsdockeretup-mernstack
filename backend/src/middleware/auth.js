@@ -38,6 +38,9 @@ const authenticate = async (req, res, next) => {
 
     // Attach user ID to request object
     req.userId = decoded.userId;
+    
+    // Also attach user object for compatibility
+    req.user = { id: decoded.userId };
 
     // Optional immediate revocation: tokenVersion must match user.tokenVersion
     const user = await User.findById(decoded.userId).select('tokenVersion status');

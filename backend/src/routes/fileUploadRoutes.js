@@ -187,4 +187,81 @@ router.get(
   fileUploadController.downloadPublicFile.bind(fileUploadController)
 );
 
+// Sharing Routes
+// Share file with users
+router.post(
+  '/share',
+  authenticate,
+  [
+    body('fileId')
+      .notEmpty()
+      .withMessage('File ID is required')
+      .isMongoId()
+      .withMessage('Invalid file ID format'),
+    body('userIds')
+      .isArray()
+      .withMessage('userIds must be an array'),
+    body('userIds.*')
+      .optional()
+      .isMongoId()
+      .withMessage('Invalid user ID format'),
+    body('permission')
+      .optional()
+      .isIn(['view', 'download'])
+      .withMessage('Permission must be view or download'),
+  ],
+  validateRequest,
+  fileUploadController.shareFile.bind(fileUploadController)
+);
+
+// Unshare file from user
+router.post(
+  '/unshare',
+  authenticate,
+  [
+    body('fileId')
+      .notEmpty()
+      .withMessage('File ID is required')
+      .isMongoId()
+      .withMessage('Invalid file ID format'),
+    body('userId')
+      .notEmpty()
+      .withMessage('User ID is required')
+      .isMongoId()
+      .withMessage('Invalid user ID format'),
+  ],
+  validateRequest,
+  fileUploadController.unshareFile.bind(fileUploadController)
+);
+
+// Toggle file public/private
+router.post(
+  '/toggle-public',
+  authenticate,
+  [
+    body('fileId')
+      .notEmpty()
+      .withMessage('File ID is required')
+      .isMongoId()
+      .withMessage('Invalid file ID format'),
+  ],
+  validateRequest,
+  fileUploadController.togglePublic.bind(fileUploadController)
+);
+
+// Get list of users file is shared with
+router.post(
+  '/shared-users',
+  authenticate,
+  [
+    body('fileId')
+      .notEmpty()
+      .withMessage('File ID is required')
+      .isMongoId()
+      .withMessage('Invalid file ID format'),
+  ],
+  validateRequest,
+  fileUploadController.getSharedUsers.bind(fileUploadController)
+);
+
 module.exports = router;

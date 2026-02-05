@@ -22,7 +22,7 @@ const ChatMessage = ({ message, isUser }) => {
         </div>
       )}
       
-      <div className={`max-w-[80%] ${isUser ? 'order-first' : ''}`}>
+      <div className={`w-full sm:max-w-[85%] md:max-w-[80%] ${isUser ? 'order-first' : ''}`}>
         <div className={`rounded-lg p-4 ${
           isUser 
             ? 'bg-blue-600 text-white' 
@@ -32,11 +32,10 @@ const ChatMessage = ({ message, isUser }) => {
             <p className="whitespace-pre-wrap">{message.content}</p>
           ) : message.isThinking ? (
             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-              <span className="animate-pulse">💭</span>
               <span className="italic">{message.content}</span>
-              <span className="animate-bounce">.</span>
-              <span className="animate-bounce animation-delay-200">.</span>
-              <span className="animate-bounce animation-delay-400">.</span>
+              <span className="animate-bounce">●</span>
+              <span className="animate-bounce animation-delay-200">●</span>
+              <span className="animate-bounce animation-delay-400">●</span>
             </div>
           ) : (
             <div className="prose prose-sm dark:prose-invert max-w-none">

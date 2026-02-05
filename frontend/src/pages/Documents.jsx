@@ -13,10 +13,12 @@ import Toast from '../components/Toast'
 import ConfirmDialog from '../components/ConfirmDialog'
 import * as documentService from '../services/documents'
 import * as preferenceService from '../services/preferences'
+import { usePermissions } from '../contexts/PermissionContext'
 
 const Documents = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const { hasPermission } = usePermissions()
   const [documents, setDocuments] = useState([])
   const [currentDoc, setCurrentDoc] = useState(null)
   const [title, setTitle] = useState('')
@@ -42,7 +44,7 @@ const Documents = () => {
     loadPreferences()
   }, [])
   
-  // Load user preferences
+  // Load user preferences from MongoDB
   const loadPreferences = async () => {
     try {
       const response = await preferenceService.getPreferences()
@@ -52,14 +54,8 @@ const Documents = () => {
       if (prefs.editorFontSize) setEditorFontSize(prefs.editorFontSize)
       if (prefs.docPanelSizes) setPanelSizes(prefs.docPanelSizes)
     } catch (error) {
-      // Silently fall back to localStorage (API not available yet)
-      const fontFamily = localStorage.getItem('editor_font_family')
-      const fontSize = localStorage.getItem('editor_font_size')
-      const savedSizes = localStorage.getItem('doc_panel_sizes')
-      
-      if (fontFamily) setEditorFontFamily(fontFamily)
-      if (fontSize) setEditorFontSize(fontSize)
-      if (savedSizes) setPanelSizes(JSON.parse(savedSizes))
+      console.error('Failed to load preferences from MongoDB:', error)
+      // No fallback - MongoDB only
     }
   }
   
@@ -135,14 +131,13 @@ const Documents = () => {
     return () => document.removeEventListener('click', handleClick, true)
   }, [hasUnsavedChanges, location.pathname, blockedNavigation, navigate])
   
-  // Save panel sizes when changed
+  // Save panel sizes to MongoDB
   const handleDragEnd = async (sizes) => {
     setPanelSizes(sizes)
-    // Try API, fall back to localStorage
     try {
       await preferenceService.updatePreference('docPanelSizes', sizes)
     } catch (error) {
-      localStorage.setItem('doc_panel_sizes', JSON.stringify(sizes))
+      console.error('Failed to save panel sizes to MongoDB:', error)
     }
   }
   
@@ -174,44 +169,11 @@ const Documents = () => {
   const loadDocuments = async () => {
     try {
       setLoading(true)
-      
-      // Try to load from API first
-      try {
-        const response = await documentService.getDocuments()
-        setDocuments(response.data || [])
-        
-        // Migrate from localStorage if API has no documents but localStorage does
-        const localDocs = localStorage.getItem('markdown_documents')
-        if (localDocs && (!response.data || response.data.length === 0)) {
-          const docs = JSON.parse(localDocs)
-          if (docs.length > 0) {
-            // Migrate documents to API
-            for (const doc of docs) {
-              try {
-                await documentService.createDocument({
-                  title: doc.title,
-                  content: doc.content
-                })
-              } catch (err) {
-                console.error('Failed to migrate document:', err)
-              }
-            }
-            // Reload after migration
-            const newResponse = await documentService.getDocuments()
-            setDocuments(newResponse.data || [])
-            showToast('Documents migrated to database', 'success')
-          }
-        }
-      } catch (apiError) {
-        // If API not available, fall back to localStorage
-        console.log('API not available, using localStorage')
-        const localDocs = localStorage.getItem('markdown_documents')
-        if (localDocs) {
-          setDocuments(JSON.parse(localDocs))
-        }
-      }
+      const response = await documentService.getDocuments()
+      setDocuments(response.data || [])
     } catch (error) {
-      console.error('Failed to load documents:', error)
+      console.error('Failed to load documents from MongoDB:', error)
+      showToast('Failed to load documents', 'error')
     } finally {
       setLoading(false)
     }
@@ -258,64 +220,36 @@ const Documents = () => {
 
     try {
       setLoading(true)
+      let savedDoc
       
-      // Try to save to API first
-      try {
-        let savedDoc
-        
-        if (currentDoc && currentDoc._id) {
-          // Update existing document
-          const response = await documentService.updateDocument(currentDoc._id, {
-            title: title.trim(),
-            content: content
-          })
-          savedDoc = response.data
-          
-          // Update local state
-          const updatedDocs = documents.map(d => d._id === savedDoc._id ? savedDoc : d)
-          setDocuments(updatedDocs)
-        } else {
-          // Create new document
-          const response = await documentService.createDocument({
-            title: title.trim(),
-            content: content
-          })
-          savedDoc = response.data
-          
-          // Add to local state
-          setDocuments([savedDoc, ...documents])
-        }
-        
-        setCurrentDoc(savedDoc)
-        setHasUnsavedChanges(false)
-        showToast('Document saved successfully', 'success')
-      } catch (apiError) {
-        // Fall back to localStorage if API not available
-        console.log('API not available, saving to localStorage')
-        
-        const doc = {
-          _id: currentDoc?._id || Date.now().toString(),
+      if (currentDoc && currentDoc._id) {
+        // Update existing document in MongoDB
+        const response = await documentService.updateDocument(currentDoc._id, {
           title: title.trim(),
-          content: content,
-          createdAt: currentDoc?.createdAt || new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-
-        let updatedDocs
-        if (currentDoc) {
-          updatedDocs = documents.map(d => d._id === doc._id ? doc : d)
-        } else {
-          updatedDocs = [doc, ...documents]
-        }
-
+          content: content
+        })
+        savedDoc = response.data
+        
+        // Update local state
+        const updatedDocs = documents.map(d => d._id === savedDoc._id ? savedDoc : d)
         setDocuments(updatedDocs)
-        setCurrentDoc(doc)
-        localStorage.setItem('markdown_documents', JSON.stringify(updatedDocs))
-        setHasUnsavedChanges(false)
-        showToast('Document saved successfully', 'success')
+      } else {
+        // Create new document in MongoDB
+        const response = await documentService.createDocument({
+          title: title.trim(),
+          content: content
+        })
+        savedDoc = response.data
+        
+        // Add to local state
+        setDocuments([savedDoc, ...documents])
       }
+      
+      setCurrentDoc(savedDoc)
+      setHasUnsavedChanges(false)
+      showToast('Document saved successfully', 'success')
     } catch (error) {
-      console.error('Failed to save document:', error)
+      console.error('Failed to save document to MongoDB:', error)
       showToast('Failed to save document', 'error')
     } finally {
       setLoading(false)
@@ -338,17 +272,12 @@ const Documents = () => {
       message: `Are you sure you want to delete "${doc.title}"?`,
       onConfirm: async () => {
         try {
-          // Try API first
-          try {
-            await documentService.deleteDocument(doc._id)
-          } catch (apiError) {
-            console.log('API not available, deleting from localStorage')
-          }
+          // Delete from MongoDB
+          await documentService.deleteDocument(doc._id)
           
-          // Always update local state and localStorage
+          // Update local state
           const updatedDocs = documents.filter(d => d._id !== doc._id)
           setDocuments(updatedDocs)
-          localStorage.setItem('markdown_documents', JSON.stringify(updatedDocs))
           
           if (currentDoc?._id === doc._id) {
             handleNew()
@@ -357,7 +286,7 @@ const Documents = () => {
           showToast('Document deleted', 'success')
           setConfirmDialog({ ...confirmDialog, isOpen: false })
         } catch (error) {
-          console.error('Failed to delete document:', error)
+          console.error('Failed to delete document from MongoDB:', error)
           showToast('Failed to delete document', 'error')
           setConfirmDialog({ ...confirmDialog, isOpen: false })
         }
@@ -666,22 +595,20 @@ const Documents = () => {
 
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="ml-5 mr-5 mt-5 mb-2">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Documents
-          </h1>
-          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
-            Manage documents
-          </p>
-        </div>
-       
+      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+          Documents
+        </h1>
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+          Manage documents
+        </p>
       </div>
+      
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 flex-1">
-            <FileText className="w-6 h-6 text-blue-600" />
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 flex-shrink-0" />
             <input
               type="text"
               value={title}
@@ -690,44 +617,22 @@ const Documents = () => {
                 setHasUnsavedChanges(true)
               }}
               placeholder="Document Title"
-              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="flex-1 min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             />
           </div>
-          <div className="flex gap-2">
-            <Button onClick={handleNew} size="sm" center variant="success">
-              <Plus className="w-4 h-4 " />
-              
-            </Button>
-            <Button onClick={handleSave} variant="primary" center size="sm">
-              <Save className="w-4 h-4 " />
-              
-            </Button>
-            {/* <Button 
-              onClick={() => setShowSidebar(!showSidebar)} 
-              variant="secondary"
-              size="sm"
-              title={showSidebar ? "Hide documents" : "Show documents"}
-            >
-              {showSidebar ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
-            </Button> */}
-            {/* <Button 
-              size="sm"
-              onClick={() => setShowEditor(!showEditor)} 
-              variant="secondary"
-              title={showEditor ? "Hide editor" : "Show editor"}
-            >
-              {showEditor ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </Button> */}
-            {/* <Button 
-              onClick={() => setShowPreview(!showPreview)} 
-              variant="secondary"
-              title={showPreview ? "Hide preview" : "Show preview"}
-            >
-              {showPreview ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
-            </Button> */}
+          <div className="flex gap-2 justify-end">
+            {hasPermission('documents.canCreate') && (
+              <Button onClick={handleNew} size="sm" center variant="success">
+                <Plus className="w-4 h-4" />
+              </Button>
+            )}
+            {hasPermission('documents.canEdit') && (
+              <Button onClick={handleSave} variant="primary" center size="sm">
+                <Save className="w-4 h-4" />
+              </Button>
+            )}
             <Button onClick={() => setExportModal(true)} size="sm" center variant="warning">
-              <Download className="w-4 h-4 " />
-              
+              <Download className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -739,7 +644,7 @@ const Documents = () => {
           ref={splitRef}
           className="flex flex-1"
           sizes={getSizes()}
-          minSize={200}
+          minSize={[150, 200, 200]}
           gutterSize={6}
           gutterAlign="center"
           snapOffset={30}
@@ -755,14 +660,14 @@ const Documents = () => {
         >
           {/* Sidebar - Documents List */}
           {showSidebar && (
-            <div className="bg-gray-50 dark:bg-gray-900 overflow-y-auto p-4">
-              <h2 className="font-semibold text-gray-900 dark:text-white mb-3">My Documents</h2>
+            <div className="bg-gray-50 dark:bg-gray-900 overflow-y-auto p-2 sm:p-4">
+              <h2 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white mb-2 sm:mb-3">My Documents</h2>
               <DocumentsList
                 documents={documents}
                 selectedId={currentDoc?._id}
                 onSelect={handleSelect}
-                onEdit={handleSelect}
-                onDelete={handleDelete}
+                onEdit={hasPermission('documents.canEdit') ? handleSelect : null}
+                onDelete={hasPermission('documents.canDelete') ? handleDelete : null}
               />
             </div>
           )}
@@ -771,9 +676,9 @@ const Documents = () => {
           {showEditor && (
             <div className="flex flex-col h-full">
               {/* Editor Settings Toolbar */}
-              <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                <label className="flex items-center gap-2 text-sm">
-                  <span className="text-gray-700 dark:text-gray-300">Font:</span>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                <label className="flex items-center gap-2 text-xs sm:text-sm">
+                  <span className="text-gray-700 dark:text-gray-300 whitespace-nowrap">Font:</span>
                   <select
                     value={editorFontFamily}
                     onChange={async (e) => {
@@ -782,10 +687,10 @@ const Documents = () => {
                       try {
                         await preferenceService.updatePreference('editorFontFamily', newValue)
                       } catch (error) {
-                        localStorage.setItem('editor_font_family', newValue)
+                        console.error('Failed to save font family to MongoDB:', error)
                       }
                     }}
-                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm flex-1 sm:flex-initial"
                   >
                     <optgroup label="Monospace (Coding)">
                       <option value="monospace">Monospace (System)</option>
@@ -839,8 +744,8 @@ const Documents = () => {
                   </select>
                 </label>
                 
-                <label className="flex items-center gap-2 text-sm">
-                  <span className="text-gray-700 dark:text-gray-300">Size:</span>
+                <label className="flex items-center gap-2 text-xs sm:text-sm">
+                  <span className="text-gray-700 dark:text-gray-300 whitespace-nowrap">Size:</span>
                   <select
                     value={editorFontSize}
                     onChange={async (e) => {
@@ -849,10 +754,10 @@ const Documents = () => {
                       try {
                         await preferenceService.updatePreference('editorFontSize', newValue)
                       } catch (error) {
-                        localStorage.setItem('editor_font_size', newValue)
+                        console.error('Failed to save font size to MongoDB:', error)
                       }
                     }}
-                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm"
+                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm flex-1 sm:flex-initial"
                   >
                     <option value="10">10px</option>
                     <option value="11">11px</option>

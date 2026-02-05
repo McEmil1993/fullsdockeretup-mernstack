@@ -25,18 +25,22 @@ export const chat = async (messages, options = {}) => {
  * @param {Object} options - Additional options (model, temperature, etc.)
  * @returns {Promise} - Resolves when stream completes
  */
-export const chatStream = async (messages, onChunk, options = {}) => {
+export const chatStream = async (messages, onChunk, options = {}, abortSignal = null) => {
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/ai/chat/stream`, {
+    const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
+    const response = await fetch(`${API_URL}/api/ai/chat/stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
       body: JSON.stringify({ messages, options }),
+      signal: abortSignal,
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Stream response not ok:', response.status, errorText);
       throw new Error('Failed to start streaming chat');
     }
 
@@ -68,12 +72,16 @@ export const chatStream = async (messages, onChunk, options = {}) => {
               onChunk(parsed.content);
             }
           } catch (e) {
-            console.error('Error parsing chunk:', e);
+            console.error('Error parsing chunk:', e, 'Line:', line);
           }
         }
       }
     }
   } catch (error) {
+    if (error.name === 'AbortError') {
+      console.log('Stream was aborted by user');
+      throw new Error('Generation stopped');
+    }
     throw error;
   }
 };

@@ -242,6 +242,58 @@ export const fileUploadService = {
       throw error
     }
   },
+
+  // Sharing methods
+  shareFile: async (fileId, userIds, permissions = {}) => {
+    try {
+      const response = await api.post('/api/file-uploads/share', {
+        fileId,
+        userIds,
+        permissions
+      })
+      return response.data
+    } catch (error) {
+      console.error('Share file error:', error)
+      throw error.response?.data || error
+    }
+  },
+
+  unshareFile: async (fileId, userId) => {
+    try {
+      const response = await api.post('/api/file-uploads/unshare', {
+        fileId,
+        userId
+      })
+      return response.data
+    } catch (error) {
+      console.error('Unshare file error:', error)
+      throw error.response?.data || error
+    }
+  },
+
+  togglePublic: async (fileId) => {
+    try {
+      const response = await api.post('/api/file-uploads/toggle-public', {
+        fileId
+      })
+      return response.data
+    } catch (error) {
+      console.error('Toggle public error:', error)
+      throw error.response?.data || error
+    }
+  },
+
+  getSharedUsers: async (fileId) => {
+    try {
+      const response = await api.post('/api/file-uploads/shared-users', {
+        fileId
+      })
+      return response.data
+    } catch (error) {
+      console.error('Get shared users error:', error)
+      throw error.response?.data || error
+    }
+  },
 }
 
 export default fileUploadService

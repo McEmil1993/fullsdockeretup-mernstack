@@ -15,7 +15,7 @@ export function useWebSocket(onDockerEvent = null) {
   const [notifications, setNotifications] = useState([])
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true)
 
-  // Load notifications from database on init
+  // Load notifications from MongoDB on init
   useEffect(() => {
     const loadNotifications = async () => {
       try {
@@ -24,18 +24,7 @@ export function useWebSocket(onDockerEvent = null) {
           setNotifications(response.data)
         }
       } catch (error) {
-        // Silently fall back to localStorage (API not available)
-        try {
-          const saved = localStorage.getItem('dockerNotifications')
-          if (saved) {
-            const parsed = JSON.parse(saved)
-            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000)
-            const filtered = parsed.filter(n => new Date(n.timestamp).getTime() > oneDayAgo).slice(0, 10)
-            setNotifications(filtered)
-          }
-        } catch (localError) {
-          console.error('Failed to load notifications from localStorage:', localError)
-        }
+        console.error('Failed to load notifications from MongoDB:', error)
       } finally {
         setIsLoadingNotifications(false)
       }
@@ -84,7 +73,7 @@ export function useWebSocket(onDockerEvent = null) {
         timestamp: event.timestamp
       }
       
-      // Try to save to database
+      // Save to MongoDB
       try {
         const response = await notificationService.createNotification({
           message: event.message,
@@ -95,11 +84,7 @@ export function useWebSocket(onDockerEvent = null) {
         // Use server-generated ID if available
         notification.id = response.data?._id || notification.id
       } catch (error) {
-        // Silently fail - save to localStorage as fallback
-        const saved = localStorage.getItem('dockerNotifications') || '[]'
-        const notifications = JSON.parse(saved)
-        notifications.unshift(notification)
-        localStorage.setItem('dockerNotifications', JSON.stringify(notifications.slice(0, 10)))
+        console.error('Failed to save notification to MongoDB:', error)
       }
       
       setNotifications(prev => [notification, ...prev].slice(0, 10))
@@ -127,7 +112,7 @@ export function useWebSocket(onDockerEvent = null) {
         timestamp: alert.timestamp
       }
       
-      // Try to save to database
+      // Save to MongoDB
       try {
         const response = await notificationService.createNotification({
           message: alert.message,
@@ -137,11 +122,7 @@ export function useWebSocket(onDockerEvent = null) {
         })
         notification.id = response.data?._id || notification.id
       } catch (error) {
-        // Silently fail - save to localStorage as fallback
-        const saved = localStorage.getItem('dockerNotifications') || '[]'
-        const notifications = JSON.parse(saved)
-        notifications.unshift(notification)
-        localStorage.setItem('dockerNotifications', JSON.stringify(notifications.slice(0, 10)))
+        console.error('Failed to save alert notification to MongoDB:', error)
       }
       
       setNotifications(prev => [notification, ...prev].slice(0, 10))

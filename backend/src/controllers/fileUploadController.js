@@ -74,11 +74,15 @@ class FileUploadController {
 
   async getAllFiles(req, res) {
     try {
-      const { page, limit, category, search } = req.body;
+      const { page, limit, category, search, viewType } = req.body;
+      const userId = req.userId || req.user?.id;
 
-      const filters = {};
+      const filters = {
+        userId: userId // Pass current user ID
+      };
       if (category) filters.category = category;
       if (search) filters.search = search;
+      if (viewType) filters.viewType = viewType;
 
       const result = await fileUploadService.getAllFiles(page, limit, filters);
 
@@ -446,6 +450,119 @@ class FileUploadController {
       res.status(statusCode).json({
         success: false,
         message: error.message || 'Failed to download file',
+      });
+    }
+  }
+
+  // Sharing Methods
+  async shareFile(req, res) {
+    try {
+      const { fileId, userIds, permissions } = req.body;
+      const ownerId = req.userId || req.user?.id;
+
+      if (!fileId || !userIds || !Array.isArray(userIds)) {
+        return res.status(400).json({
+          success: false,
+          message: 'fileId and userIds (array) are required',
+        });
+      }
+
+      const file = await fileUploadService.shareFile(fileId, ownerId, userIds, permissions);
+
+      res.status(200).json({
+        success: true,
+        message: 'File shared successfully',
+        data: file,
+      });
+    } catch (error) {
+      const statusCode = error.message.includes('owner') ? 403 : 500;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || 'Failed to share file',
+      });
+    }
+  }
+
+  async unshareFile(req, res) {
+    try {
+      const { fileId, userId } = req.body;
+      const ownerId = req.userId || req.user?.id;
+
+      if (!fileId || !userId) {
+        return res.status(400).json({
+          success: false,
+          message: 'fileId and userId are required',
+        });
+      }
+
+      const file = await fileUploadService.unshareFile(fileId, ownerId, userId);
+
+      res.status(200).json({
+        success: true,
+        message: 'File unshared successfully',
+        data: file,
+      });
+    } catch (error) {
+      const statusCode = error.message.includes('owner') ? 403 : 500;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || 'Failed to unshare file',
+      });
+    }
+  }
+
+  async togglePublic(req, res) {
+    try {
+      const { fileId } = req.body;
+      const ownerId = req.userId || req.user?.id;
+
+      if (!fileId) {
+        return res.status(400).json({
+          success: false,
+          message: 'fileId is required',
+        });
+      }
+
+      const file = await fileUploadService.togglePublic(fileId, ownerId);
+
+      res.status(200).json({
+        success: true,
+        message: `File is now ${file.isPublic ? 'public' : 'private'}`,
+        data: file,
+      });
+    } catch (error) {
+      const statusCode = error.message.includes('owner') ? 403 : 500;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || 'Failed to toggle file visibility',
+      });
+    }
+  }
+
+  async getSharedUsers(req, res) {
+    try {
+      const { fileId } = req.body;
+      const ownerId = req.userId || req.user?.id;
+
+      if (!fileId) {
+        return res.status(400).json({
+          success: false,
+          message: 'fileId is required',
+        });
+      }
+
+      const sharedUsers = await fileUploadService.getSharedUsers(fileId, ownerId);
+
+      res.status(200).json({
+        success: true,
+        message: 'Shared users retrieved successfully',
+        data: sharedUsers,
+      });
+    } catch (error) {
+      const statusCode = error.message.includes('owner') ? 403 : 500;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || 'Failed to get shared users',
       });
     }
   }

@@ -62,18 +62,65 @@ const chatStream = async (req, res, next) => {
 
     const stream = await aiService.chatStream(messages, options);
 
-    // Stream the response (Cohere format)
-    for await (const chunk of stream) {
-      if (chunk.eventType === 'text-generation') {
-        const content = chunk.text || '';
-        if (content) {
-          res.write(`data: ${JSON.stringify({ content })}\n\n`);
+    // Stream the response (Ollama format - each line is a JSON object)
+    let buffer = '';
+    let streamClosed = false;
+    
+    // Cleanup function to destroy stream
+    const cleanup = () => {
+      if (!streamClosed) {
+        streamClosed = true;
+        stream.destroy();
+      }
+    };
+
+    // Handle client disconnect
+    req.on('close', () => {
+      console.log('Client disconnected, cleaning up stream');
+      cleanup();
+    });
+
+    stream.on('data', (chunk) => {
+      if (streamClosed) return;
+      
+      buffer += chunk.toString();
+      const lines = buffer.split('\n');
+      
+      // Keep last incomplete line in buffer
+      buffer = lines.pop() || '';
+      
+      for (const line of lines) {
+        if (line.trim()) {
+          try {
+            const json = JSON.parse(line);
+            if (json.response) {
+              res.write(`data: ${JSON.stringify({ content: json.response })}\n\n`);
+            }
+            if (json.done) {
+              res.write('data: [DONE]\n\n');
+              cleanup();
+            }
+          } catch (e) {
+            // Skip invalid JSON lines
+          }
         }
       }
-    }
+    });
 
-    res.write('data: [DONE]\n\n');
-    res.end();
+    stream.on('end', () => {
+      if (!streamClosed) {
+        res.end();
+        cleanup();
+      }
+    });
+
+    stream.on('error', (error) => {
+      if (!streamClosed) {
+        res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+        res.end();
+        cleanup();
+      }
+    });
   } catch (error) {
     // Send error through SSE
     res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
@@ -98,20 +145,45 @@ const getModels = async (req, res, next) => {
 };
 
 /**
- * Check API key status
+ * Check Ollama status
  */
 const checkStatus = async (req, res) => {
-  const hasApiKey = !!process.env.COHERE_API_KEY;
-  
-  res.json({
-    success: true,
-    data: {
-      configured: hasApiKey,
-      message: hasApiKey 
-        ? 'Cohere API is configured and ready' 
-        : 'Cohere API key is not configured',
-    },
-  });
+  try {
+    const axios = require('axios');
+    const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
+    
+    // Try to ping Ollama
+    await axios.get(`${OLLAMA_BASE_URL}/api/tags`, { timeout: 2000 });
+
+    data = {
+        configured: true,
+        message: 'Ollama is running and ready',
+        url: OLLAMA_BASE_URL,
+        model: process.env.OLLAMA_MODEL || 'deepseek-coder:6.7b',
+      }
+
+    console.log(data);
+    
+    
+    res.json({
+      success: true,
+      data: {
+        configured: true,
+        message: 'Ollama is running and ready',
+        url: OLLAMA_BASE_URL,
+        model: process.env.OLLAMA_MODEL || 'deepseek-coder:6.7b',
+      },
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      data: {
+        configured: false,
+        message: 'Ollama is not running or not accessible',
+        error: error.message,
+      },
+    });
+  }
 };
 
 module.exports = {

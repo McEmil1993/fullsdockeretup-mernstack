@@ -5,7 +5,7 @@ import api from './api';
  */
 export const getNotifications = async (options = {}) => {
   const { limit = 50, skip = 0, unreadOnly = false } = options;
-  const response = await api.get('/notifications', {
+  const response = await api.get('/api/notifications', {
     params: { limit, skip, unreadOnly }
   });
   return response.data;
@@ -15,7 +15,7 @@ export const getNotifications = async (options = {}) => {
  * Create notification
  */
 export const createNotification = async (data) => {
-  const response = await api.post('/notifications', data);
+  const response = await api.post('/api/notifications', data);
   return response.data;
 };
 
@@ -23,7 +23,7 @@ export const createNotification = async (data) => {
  * Mark notification as read
  */
 export const markAsRead = async (id) => {
-  const response = await api.patch(`/notifications/${id}/read`);
+  const response = await api.patch(`/api/notifications/${id}/read`);
   return response.data;
 };
 
@@ -31,7 +31,7 @@ export const markAsRead = async (id) => {
  * Mark all notifications as read
  */
 export const markAllAsRead = async () => {
-  const response = await api.patch('/notifications/read-all');
+  const response = await api.patch('/api/notifications/read-all');
   return response.data;
 };
 
@@ -39,7 +39,7 @@ export const markAllAsRead = async () => {
  * Delete notification
  */
 export const deleteNotification = async (id) => {
-  const response = await api.delete(`/notifications/${id}`);
+  const response = await api.delete(`/api/notifications/${id}`);
   return response.data;
 };
 
@@ -47,7 +47,7 @@ export const deleteNotification = async (id) => {
  * Delete all notifications
  */
 export const deleteAllNotifications = async () => {
-  const response = await api.delete('/notifications');
+  const response = await api.delete('/api/notifications');
   return response.data;
 };
 
@@ -55,7 +55,7 @@ export const deleteAllNotifications = async () => {
  * Delete old read notifications
  */
 export const deleteOldReadNotifications = async (daysOld = 7) => {
-  const response = await api.delete('/notifications/old/cleanup', {
+  const response = await api.delete('/api/notifications/old/cleanup', {
     params: { daysOld }
   });
   return response.data;

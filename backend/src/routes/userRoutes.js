@@ -25,9 +25,11 @@ router.post(
       .isLength({ min: 6 })
       .withMessage('Password must be at least 6 characters'),
     body('role')
-      .optional()
-      .isIn(['admin', 'instructor', 'staff'])
-      .withMessage('Role must be one of: admin, instructor, staff'),
+      .trim()
+      .notEmpty()
+      .withMessage('role is required')
+      .isLength({ min: 2 })
+      .withMessage('Role must be at least 2 characters'),
     body('status')
       .optional()
       .isIn(['active', 'inactive', 'suspended'])
@@ -57,9 +59,11 @@ router.post(
       .withMessage('Please provide a valid email')
       .normalizeEmail(),
     body('role')
-      .optional()
-      .isIn(['admin', 'student', 'instructor', 'staff'])
-      .withMessage('Role must be one of: admin, student, instructor, staff'),
+      .trim()
+      .notEmpty()
+      .withMessage('role is required')
+      .isLength({ min: 2 })
+      .withMessage('Role must be at least 2 characters'),
   ],
   validateRequest,
   userController.updateUser.bind(userController)

@@ -11,7 +11,7 @@ import { post } from './api'
  * @param {string} userData.name - User name (required)
  * @param {string} userData.email - User email (required)
  * @param {string} userData.password - User password (required)
- * @param {string} [userData.role] - User role (admin|student|instructor|staff)
+ * @param {string} [userData.role] - User role (admin|user|superadmin)
  * @param {string} [userData.status] - User status (active|inactive|suspended)
  * @returns {Promise<{user: object}>}
  */
@@ -129,12 +129,16 @@ export async function changePassword(passwordData) {
   }
 }
 
+// Alias for convenience
+export const getUsers = getAllUsers
+
 export default {
   createUser,
   updateUser,
   updateUserStatus,
   getUserById,
   getAllUsers,
+  getUsers,
   verifyPassword,
   changePassword,
 }

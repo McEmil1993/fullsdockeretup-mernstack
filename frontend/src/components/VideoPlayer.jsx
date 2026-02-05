@@ -243,7 +243,7 @@ const VideoPlayer = ({ src, fileName, mimeType }) => {
               </button>
 
               {showSettings && (
-                <div className="absolute bottom-full right-0 mb-2 bg-gray-900 rounded-lg shadow-xl py-2 min-w-[150px]">
+                <div className="absolute bottom-full right-0 mb-2 bg-gray-900 rounded-lg shadow-xl py-2 w-full sm:min-w-[150px]">
                   <div className="px-3 py-1 text-xs text-gray-400 uppercase">Playback Speed</div>
                   {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map((rate) => (
                     <button

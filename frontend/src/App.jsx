@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { SettingsProvider } from './contexts/SettingsContext'
+import { PermissionProvider } from './contexts/PermissionContext'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import User from './pages/User'
@@ -13,6 +14,8 @@ import Docker from './pages/Docker'
 import Servers from './pages/Servers'
 import Documents from './pages/Documents'
 import AIChat from './pages/AIChat'
+import RolePermissions from './pages/RolePermissions'
+import Roles from './pages/Roles'
 import TopNav from './components/TopNav'
 import SideNav from './components/SideNav'
 import Footer from './components/Footer'
@@ -111,21 +114,21 @@ const Layout = ({ children }) => {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden">
+    <div className="flex min-h-screen w-full overflow-x-hidden bg-gray-50 dark:bg-gray-900">
       <SideNav isOpen={isMobileMenuOpen} onClose={closeMobileMenu} />
-      <div className="flex-1 flex flex-col w-full lg:ml-64 h-screen overflow-hidden relative">
+      <div className="flex-1 flex flex-col min-h-screen w-full ml-0 lg:ml-64 max-w-full">
         {/* Fixed TopNav */}
-        <div className="fixed top-0 right-0 left-0 lg:left-64 z-30">
+        <div className="fixed top-0 left-0 right-0 lg:left-64 z-30 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <TopNav onMenuClick={toggleMobileMenu} />
         </div>
         
-        {/* Scrollable Main Content */}
-        <main className="flex-1 overflow-y-auto pt-16 pb-20">
+        {/* Main Content - Scrollable on each page */}
+        <main className="flex-1 w-full pt-16 pb-20">
           {children}
         </main>
         
         {/* Fixed Footer */}
-        <div className="fixed bottom-0 right-0 left-0 lg:left-64 z-30">
+        <div className="fixed bottom-0 left-0 right-0 lg:left-64 z-30">
           <Footer />
         </div>
       </div>
@@ -151,7 +154,8 @@ const AppRoutes = () => {
   // Protected routes - render with AuthProvider
   return (
     <AuthProvider>
-      <Routes>
+      <PermissionProvider>
+        <Routes>
         <Route 
           path="/login" 
           element={
@@ -250,8 +254,29 @@ const AppRoutes = () => {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/roles"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Roles />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/permissions"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <RolePermissions />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
+      </PermissionProvider>
     </AuthProvider>
   )
 }
