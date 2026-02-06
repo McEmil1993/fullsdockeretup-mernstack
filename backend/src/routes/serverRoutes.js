@@ -30,19 +30,19 @@ router.get('/', serverController.getAllServers.bind(serverController));
 // Get server by ID (all authenticated users can view)
 router.get('/:id', serverController.getServerById.bind(serverController));
 
-// Create server (admin and teacher only - role check in controller)
+// Create server (admin and superadmin only - role check in controller)
 router.post('/', serverController.createServer.bind(serverController));
 
-// Update server (admin and teacher only - role check in controller)
+// Update server (admin and superadmin only - role check in controller)
 router.put('/:id', serverController.updateServer.bind(serverController));
 
-// Deactivate server (admin and teacher only - role check in controller)
+// Deactivate server (admin and superadmin only - role check in controller)
 router.patch('/:id/deactivate', serverController.deactivateServer.bind(serverController));
 
-// Reactivate server (admin and teacher only - role check in controller)
+// Reactivate server (admin and superadmin only - role check in controller)
 router.patch('/:id/reactivate', serverController.reactivateServer.bind(serverController));
 
-// Import servers from Excel (admin and teacher only - role check in controller)
+// Import servers from Excel (admin and superadmin only - role check in controller)
 router.post('/import/excel', upload.single('file'), serverController.importServersFromExcel.bind(serverController));
 
 module.exports = router;

@@ -70,7 +70,7 @@ const User = () => {
       console.error('Failed to load roles:', error)
       // Fallback to default roles if API fails
       setAvailableRoles([
-        { name: 'supreadmin', displayName: 'Super Admin' },
+        { name: 'superadmin', displayName: 'Super Admin' },
         { name: 'admin', displayName: 'Admin' },
         { name: 'user', displayName: 'User' }
       ])

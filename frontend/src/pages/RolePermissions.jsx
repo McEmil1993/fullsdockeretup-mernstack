@@ -54,7 +54,7 @@ const Permissions = () => {
           permissionsState[role.name] = role.permissions
           
           // Debug: Log roles and permissions data
-          if (role.name === 'supreadmin') {
+          if (role.name === 'superadmin') {
             console.log('Super Admin Permissions:', {
               roles: role.permissions?.roles,
               permissions: role.permissions?.permissions

@@ -133,16 +133,16 @@ export const PermissionProvider = ({ children }) => {
           localStorage.setItem('userPermissions', JSON.stringify(freshPermissions))
           localStorage.setItem('userRole', freshRole)
         } else {
-          // If no permissions found, set default full access (supreadmin-like)
+          // If no permissions found, set default full access (superadmin-like)
           console.warn('No permissions found, defaulting to full access')
           setPermissions(getDefaultSuperAdminPermissions())
-          setRole('supreadmin')
+          setRole('superadmin')
         }
       } catch (error) {
         console.warn('Error fetching permissions, defaulting to full access:', error.message)
         // Default to full access if there's an error
         setPermissions(getDefaultSuperAdminPermissions())
-        setRole('supreadmin')
+        setRole('superadmin')
       } finally {
         setLoading(false)
       }

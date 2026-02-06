@@ -37,7 +37,7 @@ const initializeRolesAndPermissions = async () => {
 
     console.log('🎉 Initialization completed successfully!');
     console.log('\nDefault roles created:');
-    console.log('  - supreadmin (Full Access)');
+    console.log('  - superadmin (Full Access)');
     console.log('  - admin (Administrative Access)');
     console.log('  - user (Basic User Access)');
     console.log('\n💡 You can now manage roles at: /role-permissions');

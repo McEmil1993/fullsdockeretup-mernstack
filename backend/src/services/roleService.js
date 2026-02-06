@@ -149,7 +149,7 @@ class RoleService {
   // Initialize default roles
   async initializeDefaultRoles() {
     // Super Admin - Full access
-    await this.createOrUpdateRole('supreadmin', {
+    await this.createOrUpdateRole('superadmin', {
       displayName: 'Super Admin',
       description: 'Full system access',
       isSystemRole: true,

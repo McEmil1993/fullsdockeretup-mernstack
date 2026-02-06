@@ -9,10 +9,12 @@ class ServerController {
   async checkPermission(req, res) {
     try {
       const user = await User.findById(req.userId).select('role');
+      console.log("user.role:: ", user.role);
+      
       if (!user) {
         return { hasPermission: false, error: 'User not found' };
       }
-      const hasPermission = user.role === 'admin' || user.role === 'teacher';
+      const hasPermission = user.role === 'admin' || user.role === 'superadmin';
       return { hasPermission, user };
     } catch (error) {
       return { hasPermission: false, error: error.message };
@@ -58,6 +60,10 @@ class ServerController {
     try {
       // Check permission
       const { hasPermission, error } = await this.checkPermission(req, res);
+      
+      console.log("hasPermission:: ", hasPermission);
+      
+      
       if (!hasPermission) {
         return res.status(403).json({
           success: false,

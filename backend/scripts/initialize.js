@@ -30,7 +30,7 @@ async function initialize() {
 
     console.log('\n🎉 Initialization Complete!');
     console.log('\n📊 Summary:');
-    console.log('   - Roles: supreadmin, admin, user');
+    console.log('   - Roles: superadmin, admin, user');
     console.log('   - Permissions: All modules including Roles & Permissions Management');
     console.log('   - Ready to use! 🚀');
 
