@@ -13,7 +13,8 @@ import {
   X,
   ChevronDown,
   ChevronRight,
-  Users
+  Users,
+  Bell
 } from 'lucide-react'
 import { useSettings } from '../contexts/SettingsContext'
 import { usePermissions } from '../contexts/PermissionContext'
@@ -40,7 +41,7 @@ const SideNav = ({ isOpen, onClose }) => {
     { path: '/servers', icon: Server, label: 'Servers', permission: 'serversManagement.canView' },
     { path: '/file-upload', icon: Upload, label: 'File Upload', permission: 'fileUpload.canView' },
     { path: '/documents', icon: FileText, label: 'Documents', permission: 'documents.canView' },
-    { path: '/user', icon: Table, label: 'Users', permission: 'userManagement.canView' },
+     { path: '/user', icon: Table, label: 'Users', permission: 'userManagement.canView' },
     { 
       key: 'access-control',
       icon: Shield, 
@@ -52,6 +53,7 @@ const SideNav = ({ isOpen, onClose }) => {
       ]
     },
     { path: '/settings', icon: Settings, label: 'Settings', permission: 'settings.canView' },
+    { path: '/notifications', icon: Bell, label: 'Notifications', permission: null },
     { path: '/ai-chat', icon: Sparkles, label: 'My Personal AI', permission: 'aiChat.canView' },
   ]
 

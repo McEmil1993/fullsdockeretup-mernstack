@@ -1,12 +1,65 @@
 require('dotenv').config();
 const http = require('http');
 const { Server } = require('socket.io');
+const mongoose = require('mongoose');
 const DockerMonitor = require('./src/dockerMonitor');
 const { Client: SSHClient } = require('ssh2');
 const { spawn } = require('child_process');
 
 const PORT = process.env.PORT || 3001;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/student_info_tmc';
+
+// MongoDB connection
+console.log('🔌 Connecting to MongoDB for user lookup...');
+mongoose.connect(MONGO_URI).then(() => {
+  console.log('✅ MongoDB connected successfully');
+}).catch(err => {
+  console.error('❌ MongoDB connection error:', err);
+});
+
+// Define DockerActionLog schema (match backend exactly)
+const actionLogSchema = new mongoose.Schema({
+  action: {
+    type: String,
+    required: true,
+    enum: ['start', 'stop', 'restart', 'remove'],
+    index: true
+  },
+  targetType: {
+    type: String,
+    required: true,
+    enum: ['container', 'image'],
+    index: true
+  },
+  targetId: {
+    type: String,
+    required: true,
+    index: true
+  },
+  targetName: {
+    type: String,
+    required: true
+  },
+  targetImage: String,
+  success: {
+    type: Boolean,
+    required: true,
+    default: true
+  },
+  errorMessage: String,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  userName: String,
+  ipAddress: String,
+  metadata: mongoose.Schema.Types.Mixed
+}, {
+  timestamps: true
+});
+
+const DockerActionLog = mongoose.model('DockerActionLog', actionLogSchema, 'dockeractionlogs');
 
 // Parse multiple CORS origins (comma-separated)
 const allowedOrigins = CORS_ORIGIN.split(',').map(origin => origin.trim());
@@ -58,10 +111,52 @@ const clientMonitors = new Map();
 
 // Start Docker event monitoring (global for all clients)
 let dockerEventsProcess = null;
-dockerEventsProcess = dockerMonitor.startEventMonitoring((event) => {
-  // Broadcast Docker events to all connected clients
+dockerEventsProcess = dockerMonitor.startEventMonitoring(async (event) => {
+  // Look up user info from DockerActionLog before broadcasting
+  try {
+    if (event.containerName) {
+      console.log(`🔍 Looking up action: ${event.action} for container: ${event.containerName}`);
+      
+      // Find the most recent action for this container
+      const recentAction = await DockerActionLog.findOne({
+        targetName: event.containerName,
+        targetType: 'container',
+        action: event.action
+      }).sort({ createdAt: -1 }).limit(1);
+      
+      console.log(`📊 Query result:`, recentAction ? `Found - User: ${recentAction.userName}, UserId: ${recentAction.userId}` : 'Not found');
+      
+      if (recentAction) {
+        event.actionBy = recentAction.userName || 'Admin';
+        event.actionByUserId = recentAction.userId ? recentAction.userId.toString() : null;
+        console.log(`📝 Event ${event.action} by ${event.actionBy} (${event.actionByUserId})`);
+      } else {
+        // Try without action filter - just get latest for container
+        const anyAction = await DockerActionLog.findOne({
+          targetName: event.containerName,
+          targetType: 'container'
+        }).sort({ createdAt: -1 }).limit(1);
+        
+        console.log(`📊 Fallback query:`, anyAction ? `Found - User: ${anyAction.userName}, Action: ${anyAction.action}` : 'Still not found');
+        
+        if (anyAction) {
+          event.actionBy = anyAction.userName || 'Admin';
+          event.actionByUserId = anyAction.userId ? anyAction.userId.toString() : null;
+        } else {
+          event.actionBy = 'System';
+          event.actionByUserId = null;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error looking up user info:', error);
+    event.actionBy = 'Admin';
+    event.actionByUserId = null;
+  }
+  
+  // Broadcast Docker events to all connected clients with user info
   io.emit('dockerEvent', event);
-  console.log(`📢 Broadcasting Docker event: ${event.action} - ${event.containerName}`);
+  console.log(`📢 Broadcasting Docker event: ${event.action} - ${event.containerName} by ${event.actionBy}`);
 });
 
 console.log(`WebSocket service starting on port ${PORT}`);

@@ -38,12 +38,10 @@ const authenticate = async (req, res, next) => {
 
     // Attach user ID to request object
     req.userId = decoded.userId;
-    
-    // Also attach user object for compatibility
-    req.user = { id: decoded.userId };
 
     // Optional immediate revocation: tokenVersion must match user.tokenVersion
-    const user = await User.findById(decoded.userId).select('tokenVersion status');
+    // Also get full user info for logging purposes
+    const user = await User.findById(decoded.userId).select('tokenVersion status name email');
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -66,6 +64,14 @@ const authenticate = async (req, res, next) => {
         message: 'Token has been revoked.',
       });
     }
+    
+    // Attach full user object with all needed fields
+    req.user = {
+      id: user._id,
+      _id: user._id,
+      name: user.name,
+      email: user.email
+    };
 
     next();
   } catch (error) {

@@ -1,6 +1,9 @@
 const { exec } = require('child_process');
 const { promisify } = require('util');
 const execAsync = promisify(exec);
+const mongoose = require('mongoose');
+
+// MongoDB connection (removed from here - will be handled in server.js)
 
 class DockerMonitor {
   constructor() {

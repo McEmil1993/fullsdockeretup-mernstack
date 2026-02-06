@@ -16,6 +16,7 @@ import Documents from './pages/Documents'
 import AIChat from './pages/AIChat'
 import RolePermissions from './pages/RolePermissions'
 import Roles from './pages/Roles'
+import NotificationHistory from './pages/NotificationHistory'
 import TopNav from './components/TopNav'
 import SideNav from './components/SideNav'
 import Footer from './components/Footer'
@@ -270,6 +271,16 @@ const AppRoutes = () => {
                 <ProtectedRoute>
                   <Layout>
                     <RolePermissions />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <NotificationHistory />
                   </Layout>
                 </ProtectedRoute>
               }

@@ -12,7 +12,7 @@ const dockerNotificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['info', 'success', 'warning', 'error'],
+    enum: ['info', 'success', 'warning', 'error', 'critical'],
     default: 'info'
   },
   containerId: {
@@ -21,6 +21,15 @@ const dockerNotificationSchema = new mongoose.Schema({
   },
   containerName: {
     type: String,
+    default: null
+  },
+  actionBy: {
+    type: String,
+    default: 'Admin'
+  },
+  actionByUserId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     default: null
   },
   isRead: {

@@ -606,75 +606,102 @@ const Documents = () => {
       
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 sm:p-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 flex-shrink-0" />
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value)
-                setHasUnsavedChanges(true)
-              }}
-              placeholder="Document Title"
-              className="flex-1 min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-          <div className="flex gap-2 justify-end">
-            {hasPermission('documents.canCreate') && (
-              <Button onClick={handleNew} size="sm" center variant="success">
-                <Plus className="w-4 h-4" />
-              </Button>
-            )}
-            {hasPermission('documents.canEdit') && (
-              <Button onClick={handleSave} variant="primary" center size="sm">
-                <Save className="w-4 h-4" />
-              </Button>
-            )}
-            <Button onClick={() => setExportModal(true)} size="sm" center variant="warning">
-              <Download className="w-4 h-4" />
+        <div className="flex flex-col gap-3">
+          {/* Mobile Toggle Buttons - Only visible on mobile */}
+          <div className="flex gap-2 lg:hidden">
+            <Button 
+              onClick={() => setShowSidebar(!showSidebar)} 
+              size="sm" 
+              variant={showSidebar ? "primary" : "secondary"}
+              className="flex-1"
+            >
+              {showSidebar ? <PanelLeftClose className="w-4 h-4 mr-2" /> : <PanelLeftOpen className="w-4 h-4 mr-2" />}
+              <span className="text-xs">Documents</span>
             </Button>
+            <Button 
+              onClick={() => setShowPreview(!showPreview)} 
+              size="sm" 
+              variant={showPreview ? "primary" : "secondary"}
+              className="flex-1"
+            >
+              {showPreview ? <EyeOff className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+              <span className="text-xs">Preview</span>
+            </Button>
+          </div>
+
+          {/* Title and Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 flex-shrink-0" />
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value)
+                  setHasUnsavedChanges(true)
+                }}
+                placeholder="Document Title"
+                className="flex-1 min-w-0 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              {hasPermission('documents.canCreate') && (
+                <Button onClick={handleNew} size="sm" center variant="success">
+                  <Plus className="w-4 h-4" />
+                </Button>
+              )}
+              {hasPermission('documents.canEdit') && (
+                <Button onClick={handleSave} variant="primary" center size="sm">
+                  <Save className="w-4 h-4" />
+                </Button>
+              )}
+              <Button onClick={() => setExportModal(true)} size="sm" center variant="warning">
+                <Download className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content with Resizable Panels */}
-      <div className="flex-1 flex overflow-hidden">
-        <Split
-          ref={splitRef}
-          className="flex flex-1"
-          sizes={getSizes()}
-          minSize={[150, 200, 200]}
-          gutterSize={6}
-          gutterAlign="center"
-          snapOffset={30}
-          dragInterval={1}
-          direction="horizontal"
-          cursor="col-resize"
-          onDragEnd={handleDragEnd}
-          gutter={(index, direction) => {
-            const gutter = document.createElement('div')
-            gutter.className = `gutter gutter-${direction} bg-gray-200 dark:bg-gray-700 hover:bg-blue-400 dark:hover:bg-blue-600 transition-colors cursor-col-resize`
-            return gutter
-          }}
-        >
-          {/* Sidebar - Documents List */}
-          {showSidebar && (
-            <div className="bg-gray-50 dark:bg-gray-900 overflow-y-auto p-2 sm:p-4">
-              <h2 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white mb-2 sm:mb-3">My Documents</h2>
-              <DocumentsList
-                documents={documents}
-                selectedId={currentDoc?._id}
-                onSelect={handleSelect}
-                onEdit={hasPermission('documents.canEdit') ? handleSelect : null}
-                onDelete={hasPermission('documents.canDelete') ? handleDelete : null}
-              />
-            </div>
-          )}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Desktop Layout - Split panels */}
+        <div className="hidden lg:flex flex-1">
+          <Split
+            ref={splitRef}
+            className="flex flex-1"
+            sizes={getSizes()}
+            minSize={[150, 200, 200]}
+            gutterSize={6}
+            gutterAlign="center"
+            snapOffset={30}
+            dragInterval={1}
+            direction="horizontal"
+            cursor="col-resize"
+            onDragEnd={handleDragEnd}
+            gutter={(index, direction) => {
+              const gutter = document.createElement('div')
+              gutter.className = `gutter gutter-${direction} bg-gray-200 dark:bg-gray-700 hover:bg-blue-400 dark:hover:bg-blue-600 transition-colors cursor-col-resize`
+              return gutter
+            }}
+          >
+            {/* Sidebar - Documents List (Desktop Only) */}
+            {showSidebar && (
+              <div className="bg-gray-50 dark:bg-gray-900 overflow-y-auto p-2 sm:p-4">
+                <h2 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white mb-2 sm:mb-3">My Documents</h2>
+                <DocumentsList
+                  documents={documents}
+                  selectedId={currentDoc?._id}
+                  onSelect={handleSelect}
+                  onEdit={hasPermission('documents.canEdit') ? handleSelect : null}
+                  onDelete={hasPermission('documents.canDelete') ? handleDelete : null}
+                />
+              </div>
+            )}
 
-          {/* Editor */}
-          {showEditor && (
-            <div className="flex flex-col h-full">
+            {/* Editor */}
+            {showEditor && (
+              <div className="flex flex-col h-full">
               {/* Editor Settings Toolbar */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
                 <label className="flex items-center gap-2 text-xs sm:text-sm">
@@ -790,13 +817,189 @@ const Documents = () => {
             </div>
           )}
 
-          {/* Preview */}
+            {/* Preview - Desktop Only */}
+            {showPreview && (
+              <div className="overflow-auto bg-white dark:bg-gray-800 h-full">
+                {content ? (
+                  <MarkdownPreview content={content} />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
+                    <div className="text-center p-8">
+                      <Eye className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium">Preview will appear here</p>
+                      <p className="text-sm mt-2">Start typing in the editor to see live preview</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </Split>
+        </div>
+
+        {/* Mobile Layout - Full width editor with overlays */}
+        <div className="lg:hidden flex-1 flex flex-col overflow-hidden">
+          {/* Mobile Editor - Always visible */}
+          <div className="flex flex-col h-full">
+            {/* Editor Settings Toolbar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+              <label className="flex items-center gap-2 text-xs sm:text-sm">
+                <span className="text-gray-700 dark:text-gray-300 whitespace-nowrap">Font:</span>
+                <select
+                  value={editorFontFamily}
+                  onChange={async (e) => {
+                    const newValue = e.target.value
+                    setEditorFontFamily(newValue)
+                    try {
+                      await preferenceService.updatePreference('editorFontFamily', newValue)
+                    } catch (error) {
+                      console.error('Failed to save font family to MongoDB:', error)
+                    }
+                  }}
+                  className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm flex-1 sm:flex-initial"
+                >
+                  <optgroup label="Monospace (Coding)">
+                    <option value="monospace">Monospace (System)</option>
+                    <option value="'Courier New', Courier, monospace">Courier New</option>
+                    <option value="'Consolas', 'Courier New', monospace">Consolas</option>
+                    <option value="'Monaco', 'Courier New', monospace">Monaco</option>
+                    <option value="'Menlo', 'Monaco', 'Courier New', monospace">Menlo</option>
+                    <option value="'Fira Code', 'Consolas', monospace">Fira Code</option>
+                    <option value="'Source Code Pro', 'Monaco', monospace">Source Code Pro</option>
+                    <option value="'JetBrains Mono', 'Fira Code', monospace">JetBrains Mono</option>
+                    <option value="'IBM Plex Mono', 'Courier New', monospace">IBM Plex Mono</option>
+                    <option value="'Roboto Mono', 'Monaco', monospace">Roboto Mono</option>
+                    <option value="'Ubuntu Mono', 'Courier New', monospace">Ubuntu Mono</option>
+                    <option value="'Cascadia Code', 'Consolas', monospace">Cascadia Code</option>
+                    <option value="'SF Mono', 'Monaco', monospace">SF Mono</option>
+                    <option value="'Inconsolata', 'Monaco', monospace">Inconsolata</option>
+                    <option value="'Hack', 'Consolas', monospace">Hack</option>
+                    <option value="'Droid Sans Mono', 'monospace'">Droid Sans Mono</option>
+                  </optgroup>
+                  <optgroup label="Sans-Serif (Modern)">
+                    <option value="Arial, Helvetica, sans-serif">Arial</option>
+                    <option value="Helvetica, Arial, sans-serif">Helvetica</option>
+                    <option value="Verdana, Geneva, sans-serif">Verdana</option>
+                    <option value="'Segoe UI', Tahoma, Geneva, sans-serif">Segoe UI</option>
+                    <option value="'Open Sans', Arial, sans-serif">Open Sans</option>
+                    <option value="'Roboto', Arial, sans-serif">Roboto</option>
+                    <option value="'Lato', Arial, sans-serif">Lato</option>
+                    <option value="'Montserrat', Arial, sans-serif">Montserrat</option>
+                    <option value="'Poppins', Arial, sans-serif">Poppins</option>
+                    <option value="'Inter', Arial, sans-serif">Inter</option>
+                    <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+                    <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                    <option value="'Arial Black', sans-serif">Arial Black</option>
+                  </optgroup>
+                  <optgroup label="Serif (Classic)">
+                    <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                    <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+                    <option value="'Palatino Linotype', 'Book Antiqua', Palatino, serif">Palatino</option>
+                    <option value="'Garamond', serif">Garamond</option>
+                    <option value="'Baskerville', serif">Baskerville</option>
+                    <option value="'Cambria', serif">Cambria</option>
+                    <option value="'Merriweather', Georgia, serif">Merriweather</option>
+                    <option value="'Playfair Display', Georgia, serif">Playfair Display</option>
+                  </optgroup>
+                  <optgroup label="Handwriting/Display">
+                    <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+                    <option value="'Brush Script MT', cursive">Brush Script</option>
+                    <option value="'Lucida Handwriting', cursive">Lucida Handwriting</option>
+                    <option value="Impact, Charcoal, sans-serif">Impact</option>
+                  </optgroup>
+                </select>
+              </label>
+              
+              <label className="flex items-center gap-2 text-xs sm:text-sm">
+                <span className="text-gray-700 dark:text-gray-300 whitespace-nowrap">Size:</span>
+                <select
+                  value={editorFontSize}
+                  onChange={async (e) => {
+                    const newValue = e.target.value
+                    setEditorFontSize(newValue)
+                    try {
+                      await preferenceService.updatePreference('editorFontSize', newValue)
+                    } catch (error) {
+                      console.error('Failed to save font size to MongoDB:', error)
+                    }
+                  }}
+                  className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm flex-1 sm:flex-initial"
+                >
+                  <option value="10">10px</option>
+                  <option value="11">11px</option>
+                  <option value="12">12px</option>
+                  <option value="13">13px</option>
+                  <option value="14">14px (Default)</option>
+                  <option value="15">15px</option>
+                  <option value="16">16px</option>
+                  <option value="18">18px</option>
+                  <option value="20">20px</option>
+                  <option value="22">22px</option>
+                  <option value="24">24px</option>
+                </select>
+              </label>
+            </div>
+            
+            <MarkdownToolbar onInsert={handleInsertMarkdown} />
+            <div className="flex-1 overflow-hidden">
+              <MarkdownEditor
+                value={content}
+                onChange={(newContent) => {
+                  setContent(newContent)
+                  setHasUnsavedChanges(true)
+                }}
+                placeholder="# Start writing your markdown here...&#10;&#10;**Bold** *Italic* `code`"
+                fontFamily={editorFontFamily}
+                fontSize={editorFontSize}
+              />
+            </div>
+          </div>
+
+          {/* Mobile Sidebar Overlay */}
+          {showSidebar && (
+            <div className="absolute inset-0 z-30 bg-gray-50 dark:bg-gray-900 overflow-y-auto p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-base text-gray-900 dark:text-white">My Documents</h2>
+                <button
+                  onClick={() => setShowSidebar(false)}
+                  className="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  <PanelLeftClose className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                </button>
+              </div>
+              <DocumentsList
+                documents={documents}
+                selectedId={currentDoc?._id}
+                onSelect={(doc) => {
+                  handleSelect(doc)
+                  setShowSidebar(false)
+                }}
+                onEdit={hasPermission('documents.canEdit') ? (doc) => {
+                  handleSelect(doc)
+                  setShowSidebar(false)
+                } : null}
+                onDelete={hasPermission('documents.canDelete') ? handleDelete : null}
+              />
+            </div>
+          )}
+
+          {/* Mobile Preview Overlay */}
           {showPreview && (
-            <div className="overflow-auto bg-white dark:bg-gray-800 h-full">
+            <div className="absolute inset-0 z-30 bg-white dark:bg-gray-800 overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="font-semibold text-base text-gray-900 dark:text-white">Preview</h2>
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <PanelRightClose className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                </button>
+              </div>
               {content ? (
-                <MarkdownPreview content={content} />
+                <div className="flex-1 overflow-y-auto p-4">
+                  <MarkdownPreview content={content} />
+                </div>
               ) : (
-                <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
+                <div className="flex-1 flex items-center justify-center text-gray-400 dark:text-gray-500">
                   <div className="text-center p-8">
                     <Eye className="w-16 h-16 mx-auto mb-4 opacity-50" />
                     <p className="text-lg font-medium">Preview will appear here</p>
@@ -806,7 +1009,7 @@ const Documents = () => {
               )}
             </div>
           )}
-        </Split>
+        </div>
       </div>
 
       {/* Export Modal */}

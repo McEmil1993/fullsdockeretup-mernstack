@@ -1,4 +1,5 @@
 const DockerNotification = require('../models/DockerNotification');
+const DockerActionLog = require('../models/DockerActionLog');
 
 class DockerNotificationService {
   /**
@@ -39,12 +40,32 @@ class DockerNotificationService {
    */
   async createNotification(userId, data) {
     try {
+      // Try to get user info from recent Docker action logs
+      let actionBy = data.actionBy || 'Admin';
+      let actionByUserId = data.actionByUserId || null;
+      
+      if (!data.actionBy && data.containerName) {
+        // Look up the most recent action for this container
+        const recentAction = await DockerActionLog.findOne({
+          targetName: data.containerName,
+          targetType: 'container'
+        }).sort({ createdAt: -1 }).limit(1);
+        
+        if (recentAction && recentAction.userName) {
+          actionBy = recentAction.userName;
+          actionByUserId = recentAction.userId;
+          console.log(`Found action by ${actionBy} for container ${data.containerName}`);
+        }
+      }
+      
       const notification = await DockerNotification.create({
         userId,
         message: data.message,
         type: data.type || 'info',
         containerId: data.containerId || null,
-        containerName: data.containerName || null
+        containerName: data.containerName || null,
+        actionBy,
+        actionByUserId
       });
       
       return notification;

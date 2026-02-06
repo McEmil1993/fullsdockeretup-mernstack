@@ -87,7 +87,7 @@ export default function Docker() {
   const [terminalContainer, setTerminalContainer] = useState(null)
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false)
   const [pendingTerminal, setPendingTerminal] = useState(null)
-  const { socket } = useWebSocket()
+  const { socket, trackUserAction } = useWebSocket()
 
   // Load all data
   const loadData = async () => {
@@ -241,6 +241,8 @@ export default function Docker() {
   // Container actions
   const handleStartContainer = async (containerId, containerName) => {
     try {
+      // Track user action to filter out self-notification
+      trackUserAction('start', containerName)
       await dockerService.startContainer(containerId)
       showToast(`Container ${containerName} started successfully`)
       // Don't call loadData - WebSocket will update stats automatically
@@ -258,6 +260,8 @@ export default function Docker() {
       `Are you sure you want to stop container "${containerName}"?`,
       async () => {
         try {
+          // Track user action to filter out self-notification
+          trackUserAction('stop', containerName)
           await dockerService.stopContainer(containerId)
           showToast(`Container ${containerName} stopped successfully`)
           // Only refresh containers list
@@ -276,6 +280,8 @@ export default function Docker() {
       `Are you sure you want to restart container "${containerName}"?`,
       async () => {
         try {
+          // Track user action to filter out self-notification
+          trackUserAction('restart', containerName)
           await dockerService.restartContainer(containerId)
           showToast(`Container ${containerName} restarted successfully`)
           // Only refresh containers list
