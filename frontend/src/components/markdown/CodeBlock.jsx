@@ -27,7 +27,7 @@ const CodeBlock = ({ children, inline, className }) => {
   const language = match ? match[1] : 'text'
 
   return (
-    <div className="relative group my-4">
+    <div className="relative group my-4 w-full min-w-0">
       <div className="flex items-center justify-between bg-[#1e1e1e] px-4 py-2 rounded-t-lg border-b border-gray-700">
         <span className="text-xs text-gray-400 uppercase font-mono font-semibold">{language}</span>
         <button
@@ -42,19 +42,28 @@ const CodeBlock = ({ children, inline, className }) => {
           )}
         </button>
       </div>
-      <SyntaxHighlighter
-        language={language}
-        style={vscDarkPlus}
-        customStyle={{
-          margin: 0,
-          borderRadius: '0 0 0.5rem 0.5rem',
-          fontSize: '0.875rem',
-          padding: '1rem',
-        }}
-        showLineNumbers={false}
-      >
-        {String(children).replace(/\n$/, '')}
-      </SyntaxHighlighter>
+      <div className="w-full overflow-x-auto" style={{ maxWidth: '100%' }}>
+        <SyntaxHighlighter
+          language={language}
+          style={vscDarkPlus}
+          customStyle={{
+            margin: 0,
+            borderRadius: '0 0 0.5rem 0.5rem',
+            fontSize: '0.875rem',
+            padding: '1rem',
+            width: '100%',
+            maxWidth: '100%',
+            whiteSpace: 'pre',
+            overflowWrap: 'normal',
+            wordBreak: 'normal',
+          }}
+          PreTag="div"
+          wrapLongLines={false}
+          showLineNumbers={false}
+        >
+          {String(children).replace(/\n$/, '')}
+        </SyntaxHighlighter>
+      </div>
     </div>
   )
 }

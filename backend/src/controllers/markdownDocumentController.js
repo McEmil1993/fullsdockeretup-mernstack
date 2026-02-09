@@ -12,7 +12,7 @@ exports.getDocuments = async (req, res, next) => {
       limit: parseInt(limit) || 100,
       skip: parseInt(skip) || 0,
       sortBy: sortBy || 'order',
-      sortOrder: sortOrder || 'asc'
+      sortOrder: sortOrder || 'desc'
     };
     
     const result = await markdownDocumentService.getDocuments(userId, options);
